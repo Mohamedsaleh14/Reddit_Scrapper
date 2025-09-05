@@ -44,8 +44,13 @@ def fetch_posts_from_subreddit(subreddit_name, limit=200) -> list:
     results = []
     seen_ids = set()
 
+    skipped_due_to_seen = 0
     skipped_due_to_age = 0
     skipped_due_to_duplicate = 0
+    total_comments = 0
+    comment_skipped_due_to_seen = 0
+    comment_skipped_due_to_age = 0
+    comment_skipped_due_to_duplicate = 0
 
     try:
         log.info(f"Fetching posts from r/{subreddit_name} using top, hot, and new...")
@@ -67,6 +72,7 @@ def fetch_posts_from_subreddit(subreddit_name, limit=200) -> list:
                 log.info(f"Processing post #{i+1}/{len(combined)}")
 
             if post.id in seen_ids:
+                skipped_due_to_seen += 1
                 continue
             seen_ids.add(post.id)
 
@@ -94,14 +100,19 @@ def fetch_posts_from_subreddit(subreddit_name, limit=200) -> list:
                 try:
                     limiter.wait()  # One API call to fetch all comments
                     post.comments.replace_more(limit=0)
-                    for comment in post.comments.list():
+                    comments_list = post.comments.list()
+                    total_comments += len(comments_list)
+                    for comment in comments_list:
                         if comment.id in seen_ids:
+                            comment_skipped_due_to_seen += 1
                             continue
                         seen_ids.add(comment.id)
 
                         if not is_post_in_age_range(comment, min_days, max_days):
+                            comment_skipped_due_to_age += 1
                             continue
                         if is_already_processed(comment.id):
+                            comment_skipped_due_to_duplicate += 1
                             continue
 
                         results.append({
@@ -116,10 +127,12 @@ def fetch_posts_from_subreddit(subreddit_name, limit=200) -> list:
                 except Exception as e:
                     log.warning(f"Failed to fetch comments for post {post.id}: {str(e)}")
 
+        log.info(f"processed {len(combined)} posts and {total_comments} comments")
         log.info(
             f"r/{subreddit_name} — Found {len(results)} new items | "
-            f"Skipped {skipped_due_to_age} due to age | {skipped_due_to_duplicate} duplicates"
+            f"Skipped posts: {skipped_due_to_seen} (due to seen) {skipped_due_to_age} (due to age) | {skipped_due_to_duplicate} (duplicates)"
         )
+        log.info(f"Skipped comments: {comment_skipped_due_to_seen} (due to seen) {comment_skipped_due_to_age} (due to age) | {comment_skipped_due_to_duplicate} (duplicates)")
     except Exception as e:
         log.error(f"Error fetching from r/{subreddit_name}: {str(e)}")
 

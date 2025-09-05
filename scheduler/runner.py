@@ -113,6 +113,7 @@ def clean_old_batch_files(folder="data/batch_responses", days_old=None):
     log.info(f"Cleaned up {deleted} old batch response files older than {days_old} days.")
 
 def get_high_potential_ids_from_filter_results(score_threshold=7.0):
+    processed = 0
     high_ids = set()
     weights = config["scoring"]
     for path in glob.glob("data/batch_responses/filter_result_*.jsonl"):
@@ -120,6 +121,7 @@ def get_high_potential_ids_from_filter_results(score_threshold=7.0):
             for line in f:
                 try:
                     result = json.loads(line)
+                    processed += 1
                     post_id = result["custom_id"]
                     content = result["response"]["body"]["choices"][0]["message"]["content"]
                     scores = json.loads(content)
@@ -133,6 +135,7 @@ def get_high_potential_ids_from_filter_results(score_threshold=7.0):
                         update_post_filter_scores(post_id, scores)
                 except Exception as e:
                     log.error(f"Error parsing filter result line: {e}")
+    log.info(f"Processed {processed} filter results, found {len(high_ids)} high-potential posts")
     return high_ids
 
 def run_daily_pipeline():

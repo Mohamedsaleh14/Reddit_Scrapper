@@ -50,6 +50,7 @@ def prepare_batch_payload(posts: List[dict]) -> List[Dict]:
         body = sanitize_text(raw_body)
 
         if not title or not body:
+            log.error("post is invalid, this should already have been asserted - skipping")
             continue  # skip malformed posts
 
         messages = build_filter_prompt({"title": title, "body": body})
