@@ -6,7 +6,7 @@ import os
 import glob
 from datetime import datetime
 import time
-from reddit.scraper import scrape_all_configured_subreddits
+from reddit.scraper import scrape_subreddits
 from db.writer import insert_post, update_post_filter_scores, update_post_insight, mark_insight_processed
 from db.reader import get_top_insights_from_today, get_posts_by_ids
 from db.schema import create_tables
@@ -152,7 +152,7 @@ def run_daily_pipeline():
     clean_old_entries()
 
     log.info("Step 2: Scraping Reddit posts...")
-    scraped_posts = scrape_all_configured_subreddits()
+    scraped_posts = scrape_subreddits()
     if not scraped_posts:
         log.warning("No posts found to analyze. Exiting pipeline.")
         return

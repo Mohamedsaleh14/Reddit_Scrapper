@@ -171,7 +171,8 @@ def update_exploratory_subreddits(new_subreddits):
     save_json(data, EXPLORATORY_FILE)
     log.info(f"Updated exploratory subreddits: {', '.join(new_subreddits)}")
 
-def scrape_all_configured_subreddits() -> list:
+def scrape_subreddits() -> list:
+    """Scrapes the configured subreddits as well as exploratory ones."""
     primary_subreddits = config["subreddits"]["primary"]
     primary_pct = config["subreddits"]["primary_percentage"]
     exploratory_pct = config["subreddits"]["exploratory_percentage"]
