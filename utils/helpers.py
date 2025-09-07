@@ -66,11 +66,3 @@ def sanitize_text(text: str) -> str:
         return ""
     emoji_pattern = re.compile("[\U00010000-\U0010FFFF]", flags=re.UNICODE)
     return emoji_pattern.sub("", text).strip()
-
-def load_prompt(name: str, path: str) -> str:
-    """Load the given prompt template from file"""
-    try:
-        with open(path, 'r', encoding='utf-8') as f:
-            return f.read()
-    except Exception as e:
-        log.fatal(f"Error loading {name} prompt template: {str(e)}")

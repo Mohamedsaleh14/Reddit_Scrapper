@@ -4,12 +4,10 @@ import os
 from typing import List, Dict, Any
 from utils.helpers import estimate_tokens, sanitize_text
 from utils.logger import setup_logger
-from config.config_loader import get_config
-from utils.helpers import load_prompt
+from config.config_loader import get_config, PROMPT_INSIGHT
 
 log = setup_logger()
 config = get_config()
-PROMPT_PATH = "gpt/prompts/insight_prompt.txt"
 
 def build_insight_prompt(post: dict) -> List[Dict[str, str]]:
     """Constructs the GPT-4.1 prompt for extracting deeper insights using template."""
@@ -20,7 +18,7 @@ def build_insight_prompt(post: dict) -> List[Dict[str, str]]:
         },
         {
             "role": "user",
-            "content": f"Post title: {post['title']}\nPost body: {post['body']}\n\n{load_prompt('insight', PROMPT_PATH)}"
+            "content": f"Post title: {post['title']}\nPost body: {post['body']}\n\n{config['prompts'][PROMPT_INSIGHT]}"
         }
     ]
 

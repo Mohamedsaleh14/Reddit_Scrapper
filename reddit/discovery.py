@@ -3,12 +3,10 @@ from openai import OpenAI
 import json
 from config.config_loader import get_config
 from utils.logger import setup_logger
-from utils.helpers import load_prompt
+from config.config_loader import PROMPT_COMMUNITY_DISCOVERY, PROMPT_COMMUNITY_DISCOVERY_SYSTEM
 
 log = setup_logger()
 config = get_config()
-PROMPT_PATH = "gpt/prompts/community_discovery.txt"
-SYSTEM_PROMPT_PATH = "gpt/prompts/community_discovery_system.txt"
 
 client = OpenAI()
 
@@ -20,11 +18,11 @@ def build_discovery_prompt(top_post_summaries: list[str]) -> list:
     return [
         {
             "role": "system",
-            "content": load_prompt("community discovery system", SYSTEM_PROMPT_PATH),
+            "content": config['prompts'][PROMPT_COMMUNITY_DISCOVERY_SYSTEM],
         },
         {
             "role": "user",
-            "content": load_prompt("community discovery", PROMPT_PATH).replace("{SUMMARIES}", joined),
+            "content": config['prompts'][PROMPT_COMMUNITY_DISCOVERY].replace("{SUMMARIES}", joined),
         }
     ]
 

@@ -5,12 +5,10 @@ import os
 from typing import List, Dict
 from utils.helpers import estimate_tokens, sanitize_text
 from utils.logger import setup_logger
-from config.config_loader import get_config
-from utils.helpers import load_prompt
+from config.config_loader import get_config, PROMPT_FILTER
 
 log = setup_logger()
 config = get_config()
-PROMPT_PATH = "gpt/prompts/filter_prompt.txt"
 
 
 def build_filter_prompt(post: dict) -> List[Dict]:
@@ -22,7 +20,7 @@ def build_filter_prompt(post: dict) -> List[Dict]:
         },
         {
             "role": "user",
-            "content": f"Post title: {post['title']}\nPost body: {post['body']}\n\n{load_prompt('filter', PROMPT_PATH)}"
+            "content": f"Post title: {post['title']}\nPost body: {post['body']}\n\n{config['prompts'][PROMPT_FILTER]}"
         }
     ]
 
