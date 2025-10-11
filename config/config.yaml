@@ -21,13 +21,13 @@ scraper:
   min_post_age_days: 5              # Post must be at least 5 days old
   max_post_age_days: 30             # Ignore posts older than 3 months
   max_items_per_day: 300            # Total posts/comments scraped per run
-  include_comments: true
+  include_comments: false
   rate_limit_per_minute: 60         # Reddit API rate limit
 
 # OpenAI settings
 openai:
   model_filter: gpt-4o-mini        # For pre-filtering stage
-  model_deep: gpt-4.1               # For insight extraction
+  model_deep: gpt-5.0               # For insight extraction
   use_batch_api: true
   monthly_budget_usd: 100           # Cost cap for safety
   max_tokens_per_post: 1000         # Estimate for budgeting
