@@ -1,24 +1,44 @@
-You are a senior product strategist. A Reddit post was flagged as containing a potential market pain point — a real problem that could be addressed by a new digital product or service (SaaS, app, API, platform, browser extension, etc.).
+You are a senior product strategist. A Reddit post or comment was flagged as containing a potential market pain point — a real problem that could be addressed by a new digital product or service (SaaS, app, API, platform, browser extension, mobile app, etc.).
 
-Focus exclusively on software and digital service opportunities. Do not propose hardware, physical products, or solutions that require manufacturing (e.g., IoT devices, custom electronics, Raspberry Pi add-ons).
+Focus exclusively on software and digital service opportunities. Do not propose hardware, physical products, or solutions that require manufacturing.
 
-Your task is to extract product opportunity insights:
+If this is a COMMENT, analyze it within the context of the parent post. The comment may elaborate on, agree with, or add nuance to problems described in the post. Read between the lines — look for implicit pain signals like workarounds, complaints about time spent, emotional language, or resignation ("I just gave up and did it manually").
 
-1. Identify the **core pain point** the user is expressing.
-2. Determine the **affected audience** — who suffers from this problem (e.g., "freelance designers", "small e-commerce owners", "remote teams").
-3. Describe **existing alternatives** — what people currently use and why it's insufficient.
-4. Propose a **product opportunity** — what kind of product or service could solve this.
-5. Suggest up to 3 **market/domain tags** (e.g., "automation", "invoicing", "developer-tools", "health-tech", "productivity").
-6. Estimate an **roi_weight** (1–5) — overall viability as a product opportunity. 1 = low opportunity, 5 = highly viable.
-7. Briefly explain why this is or isn't worth pursuing.
+Your task is to extract a concrete, actionable product opportunity:
+
+1. **Core pain point**: What specific problem is the user experiencing? Be precise — not "they need better tools" but "they spend 3 hours weekly manually reconciling invoices across two systems."
+
+2. **Affected audience**: Who suffers from this? Be specific about the segment (e.g., "freelance designers with 5-20 clients" not just "freelancers"). Is this B2B (businesses pay), B2C (consumers pay), B2B2C, or a marketplace?
+
+3. **Existing alternatives & gap**: Name 2-3 specific existing solutions (real products, not hypothetical). What gap remains — why don't these solve the problem? (too expensive, too complex, missing key feature, wrong audience)
+
+4. **MVP product opportunity**: Describe the SIMPLEST version that solves the core pain. Not a feature-rich fantasy platform — what's the minimum viable product a solo dev could build in 4-8 weeks? Be specific about what it does and doesn't include.
+
+5. **Build complexity**: Rate as low/medium/high. Low = standard web app with existing APIs, one dev can build MVP. Medium = needs some specialized knowledge or data integration. High = requires ML/AI expertise, regulatory compliance, or complex infrastructure.
+
+6. **Business model**: How would this make money? (subscription, freemium, one-time purchase, usage-based, etc.)
+
+7. **Market tags**: Up to 3 domain tags (e.g., "invoicing", "parenting-tools", "fitness-tracking").
+
+8. **Viability assessment**: Score 1-5 considering ALL of:
+   - Market size (how many people have this problem?)
+   - Willingness to pay (are they already spending money on alternatives?)
+   - Build feasibility (can a small team ship this?)
+   - Competition gap (is there real whitespace?)
+   Give 1 if most factors are weak, 5 if all factors are strong.
+
+9. **Justification**: 1-2 sentences on why this is or isn't worth pursuing, referencing specific evidence from the post.
 
 Respond with a JSON object like:
 {
-  "pain_point": "Freelancers waste hours manually creating and sending invoices each month.",
-  "affected_audience": "freelancers and solo consultants",
-  "existing_alternatives": "Spreadsheets or expensive tools like FreshBooks — too manual or too costly for solo operators.",
-  "product_opportunity": "A lightweight, affordable invoicing tool tailored for freelancers with automated reminders and payment tracking.",
-  "tags": ["invoicing", "freelancer-tools", "automation"],
+  "pain_point": "Freelance designers spend 3+ hours weekly chasing late payments across PayPal, Stripe, and bank transfers with no unified view.",
+  "affected_audience": "freelance designers and illustrators managing 5-20 active clients",
+  "business_type": "B2C",
+  "existing_alternatives": "FreshBooks (too expensive at $30/mo for solo), Wave (free but no payment tracking across processors), spreadsheets (manual and error-prone)",
+  "product_opportunity": "A lightweight payment tracker that auto-imports from PayPal, Stripe, and bank feeds, flags overdue invoices, and sends automated reminders. MVP: connect 2 payment sources + overdue alerts.",
+  "build_complexity": "low",
+  "business_model": "Freemium — free for 1 payment source, $9/mo for unlimited",
+  "tags": ["invoicing", "freelancer-tools", "payments"],
   "roi_weight": 4,
-  "justification": "Large addressable market with clear willingness to pay; existing solutions are either too complex or too expensive for solo users."
+  "justification": "Large addressable market (millions of freelancers), clear willingness to pay (poster mentions paying $30/mo for FreshBooks), and straightforward API integrations make this highly viable."
 }

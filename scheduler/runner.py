@@ -251,7 +251,8 @@ def get_high_potential_ids_from_filter_results(score_threshold=7.0):
                     weighted_score = (
                         scores["relevance_score"] * weights["relevance_weight"] +
                         scores["emotional_intensity"] * weights["emotion_weight"] +
-                        scores["pain_point_clarity"] * weights["pain_point_weight"]
+                        scores["pain_point_clarity"] * weights["pain_point_weight"] +
+                        scores.get("implementability_score", 5) * weights.get("implementability_weight", 0)
                     )
                     update_post_filter_scores(post_id, scores)
                     all_processed_ids.add(post_id)

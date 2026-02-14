@@ -36,6 +36,8 @@ def create_tables():
         roi_weight INTEGER,
         community_type TEXT,
         type TEXT,  -- 'post' or 'comment'
+        post_body TEXT,  -- parent post body for comments
+        implementability_score REAL,
         insight_processed INTEGER DEFAULT 0,
         insight_processed_at TEXT
     );

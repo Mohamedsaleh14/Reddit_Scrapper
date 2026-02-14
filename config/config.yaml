@@ -6,11 +6,11 @@ subreddits:
     - devops
     - selfhosted
     - webdev
-    - SaaS
-    - learnprogramming
     - startups
-    - sideproject
-    - experienceddevs
+    - personalfinance
+    - Parenting
+    - smallbusiness
+    - Fitness
   exploratory_limit: 12             # Max exploratory subreddits at a time
   exploratory_refresh_days: 7       # How often to refresh improvised list
   exploratory_percentage: 90        # % of posts from exploratory communities
@@ -35,9 +35,10 @@ openai:
 
 # Scoring weights (used in filtering and final ranking)
 scoring:
-  relevance_weight: 0.4
-  emotion_weight: 0.2
-  pain_point_weight: 0.3
+  relevance_weight: 0.3
+  emotion_weight: 0.15
+  pain_point_weight: 0.25
+  implementability_weight: 0.2      # New: prioritize buildable ideas
   recent_activity_weight: 0.1       # Prioritize active threads
   output_top_n: 10                  # Number of final posts to recommend
 

@@ -9,6 +9,19 @@ from config.config_loader import get_config, PROMPT_INSIGHT
 log = setup_logger()
 config = get_config()
 
+def _format_post_content(post: dict) -> str:
+    """Format post/comment content with appropriate context."""
+    post_body = post.get("post_body", "")
+    if post_body:
+        # This is a comment — include parent post context
+        return (
+            f"Post title: {post['title']}\n"
+            f"Post body: {post_body}\n"
+            f"Comment: {post['body']}"
+        )
+    return f"Post title: {post['title']}\nPost body: {post['body']}"
+
+
 def build_insight_prompt(post: dict) -> List[Dict[str, str]]:
     """Constructs the GPT-4.1 prompt for extracting deeper insights using template."""
     return [
@@ -18,7 +31,7 @@ def build_insight_prompt(post: dict) -> List[Dict[str, str]]:
         },
         {
             "role": "user",
-            "content": f"{config['prompts'][PROMPT_INSIGHT]}\n\nPost title: {post['title']}\nPost body: {post['body']}"
+            "content": f"{config['prompts'][PROMPT_INSIGHT]}\n\n{_format_post_content(post)}"
         }
     ]
 
@@ -37,12 +50,13 @@ def prepare_insight_batch(posts: List[dict]) -> List[Dict[str, Any]]:
         if not title or not body:
             continue  # skip malformed posts
 
-        messages = build_insight_prompt({"title": title, "body": body})
+        post_body = sanitize_text(post.get("post_body", ""))
+        messages = build_insight_prompt({"title": title, "body": body, "post_body": post_body})
         payload.append({
             "id": post["id"],
             "messages": messages,
             "meta": {
-                "estimated_tokens": estimate_tokens(title + body, model)
+                "estimated_tokens": estimate_tokens(title + body + post_body, model)
             }
         })
     return payload

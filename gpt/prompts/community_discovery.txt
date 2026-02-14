@@ -1,11 +1,22 @@
-You are an expert in market research and product opportunity discovery. Your goal is to find Reddit communities where people frequently discuss unmet needs, frustrations with existing tools, and problems that could be solved by new digital products or services (SaaS, apps, APIs, platforms, browser extensions, etc.). Focus on communities where pain points are solvable by software, not hardware or physical products.
-
 Based on the following top-performing Reddit posts (titles and summaries), recommend a ranked list of 12 adjacent subreddits that are likely rich in product-worthy pain points and unmet needs.
 
 {SUMMARIES}
 
+IMPORTANT: Cast a WIDE net across wildly different domains. Do NOT cluster around tech/startup/developer communities. People spend money to solve problems in every area of life.
+
+Aim for this mix:
+- ~4 tech/startup/developer communities (tools, infrastructure, workflows)
+- ~4 consumer/lifestyle communities (parenting, health, personal finance, fitness, food, pets, hobbies)
+- ~4 niche/unexpected communities (trades, aging/eldercare, legal, real estate, education, specific health conditions, local services)
+
+Look for communities where people:
+- Spend money to solve problems or express frustration with existing paid solutions
+- Describe workarounds, time waste, or failed attempts to find tools
+- Discuss recurring operational pain (not just one-off questions)
+- Have high engagement around "how do you handle X?" or "is there a tool for Y?" threads
+
 For each recommended subreddit, provide:
-- A short rationale
+- A short rationale explaining WHY this community has product opportunities
 - An estimate of:
   - % of posts with pain point signals
   - % of comments asking for solutions

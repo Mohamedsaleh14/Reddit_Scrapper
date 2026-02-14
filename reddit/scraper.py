@@ -122,6 +122,7 @@ def fetch_posts_from_subreddit(subreddit_name, limit=200) -> list:
                             "id": comment.id,
                             "title": post.title,
                             "body": comment.body,
+                            "post_body": post.selftext,
                             "created_utc": comment.created_utc,
                             "subreddit": subreddit_name,
                             "url": f"https://www.reddit.com{comment.permalink}",
