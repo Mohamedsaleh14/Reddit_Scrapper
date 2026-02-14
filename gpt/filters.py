@@ -16,11 +16,11 @@ def build_filter_prompt(post: dict) -> List[Dict]:
     return [
         {
             "role": "system",
-            "content": "You are a marketing assistant scoring Reddit posts for product relevance."
+            "content": "You are a market research analyst identifying posts that describe genuine pain points with product potential."
         },
         {
             "role": "user",
-            "content": f"Post title: {post['title']}\nPost body: {post['body']}\n\n{config['prompts'][PROMPT_FILTER]}"
+            "content": f"{config['prompts'][PROMPT_FILTER]}\n\nPost title: {post['title']}\nPost body: {post['body']}"
         }
     ]
 

@@ -14,11 +14,11 @@ def build_insight_prompt(post: dict) -> List[Dict[str, str]]:
     return [
         {
             "role": "system",
-            "content": "You are a SaaS strategist extracting pain points and marketing tags from Reddit posts."
+            "content": "You are a product strategist evaluating Reddit posts for viable product opportunities."
         },
         {
             "role": "user",
-            "content": f"Post title: {post['title']}\nPost body: {post['body']}\n\n{config['prompts'][PROMPT_INSIGHT]}"
+            "content": f"{config['prompts'][PROMPT_INSIGHT]}\n\nPost title: {post['title']}\nPost body: {post['body']}"
         }
     ]
 

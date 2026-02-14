@@ -1,4 +1,4 @@
-You are an expert in market research and product opportunity discovery. Your goal is to find Reddit communities where people frequently discuss unmet needs, frustrations with existing tools, and problems that could be solved by new products or services.
+You are an expert in market research and product opportunity discovery. Your goal is to find Reddit communities where people frequently discuss unmet needs, frustrations with existing tools, and problems that could be solved by new digital products or services (SaaS, apps, APIs, platforms, browser extensions, etc.). Focus on communities where pain points are solvable by software, not hardware or physical products.
 
 Based on the following top-performing Reddit posts (titles and summaries), recommend a ranked list of 12 adjacent subreddits that are likely rich in product-worthy pain points and unmet needs.
 

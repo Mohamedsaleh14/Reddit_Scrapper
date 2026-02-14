@@ -13,21 +13,21 @@ subreddits:
     - experienceddevs
   exploratory_limit: 12             # Max exploratory subreddits at a time
   exploratory_refresh_days: 7       # How often to refresh improvised list
-  exploratory_percentage: 10        # % of posts from exploratory communities
-  primary_percentage: 90            # % of posts from configured communities
+  exploratory_percentage: 90        # % of posts from exploratory communities
+  primary_percentage: 10            # % of posts from configured communities
 
 # Reddit scraping settings
 scraper:
   min_post_age_days: 5              # Post must be at least 5 days old
-  max_post_age_days: 30             # Ignore posts older than 3 months
-  max_items_per_day: 300            # Total posts/comments scraped per run
+  max_post_age_days: 10              # Ignore posts older than 3 months
+  max_items_per_day: 100            # Total posts/comments scraped per run
   include_comments: true
   rate_limit_per_minute: 60         # Reddit API rate limit
 
 # OpenAI settings
 openai:
-  model_filter: gpt-4o-mini        # For pre-filtering stage
-  model_deep: gpt-4.1               # For insight extraction
+  model_filter: gpt-5-mini        # For pre-filtering stage
+  model_deep: gpt-5.1               # For insight extraction
   use_batch_api: true
   monthly_budget_usd: 100           # Cost cap for safety
   max_tokens_per_post: 1000         # Estimate for budgeting
