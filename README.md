@@ -7,17 +7,18 @@
 > 📺 Click the thumbnail above to watch a full explainer — why I built this tool, how it works, and how you can use it to automate Reddit lead generation using GPT-4.
 
 # Reddit Scraper
-A Python application that scrapes Reddit for potential marketing leads, analyzes them with GPT models, and identifies high-value opportunities for a cron job scheduling SaaS.
+A Python application that scrapes Reddit for potential marketing leads, analyzes them with GPT models, and identifies high-value opportunities. Includes an interactive Streamlit dashboard for browsing and filtering results.
 
 ## 📑 Table of Contents
 - [Overview](#-overview)
 - [Setup](#-setup)
 - [Configuration](#-configuration)
 - [Running](#-running)
+- [GUI Dashboard](#-gui-dashboard)
 - [Results](#-results)
 - [Project Structure](#-project-structure)
 - [Cost Controls](#-cost-controls)
-- [Missing Features](#-missing-features)
+- [Contributors](#-contributors)
 - [Why This Exists](#-why-this-exists)
 - [License](#-license)
 - [Third-Party Licenses](#-third-party-licenses)
@@ -30,14 +31,15 @@ This tool uses a combination of Reddit's API and OpenAI's GPT models to:
 2. Identify posts that express pain points solvable by a cron job scheduling SaaS
 3. Score and analyze these posts to find high-quality marketing leads
 4. Store results in a local SQLite database for review
+5. Browse and filter results through an interactive web dashboard
 
-The application maintains a balance between focused (90%) and exploratory (10%) subreddits, intelligently refreshing the exploratory list based on discoveries. This exploration process happens automatically as part of the main workflow.
+The application maintains a balance between focused and exploratory subreddits, intelligently refreshing the exploratory list based on discoveries. This exploration process happens automatically as part of the main workflow.
 
 ## 🚀 Setup
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.10+
 - Reddit API credentials ([create an app here](https://www.reddit.com/prefs/apps))
 - OpenAI API key
 
@@ -45,8 +47,8 @@ The application maintains a balance between focused (90%) and exploratory (10%) 
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/cronlytic-reddit-scraper.git
-   cd cronlytic-reddit-scraper
+   git clone https://github.com/Mohamedsaleh14/Reddit_Scrapper.git
+   cd Reddit_Scrapper
    ```
 
 2. Create a virtual environment:
@@ -69,7 +71,7 @@ The application maintains a balance between focused (90%) and exploratory (10%) 
    ```
    REDDIT_CLIENT_ID=your_client_id
    REDDIT_CLIENT_SECRET=your_client_secret
-   REDDIT_USER_AGENT="script:cronlytic-reddit-scraper:v1.0 (by /u/yourusername)"
+   REDDIT_USER_AGENT=script:cronlytic-reddit-scraper:v1.0 (by /u/yourusername)
    OPENAI_API_KEY=your_openai_api_key
    ```
 
@@ -78,7 +80,7 @@ The application maintains a balance between focused (90%) and exploratory (10%) 
 Configure the application by editing `config/config.yaml`. Key settings include:
 
 - **Target subreddits**: Primary subreddits and exploratory subreddit settings
-- **Post age range**: Only analyze posts 5-90 days old
+- **Post age range**: Only analyze posts within the configured age window
 - **API rate limits**: Prevent hitting Reddit API limits
 - **OpenAI models**: Which models to use for filtering and deep analysis
 - **Monthly budget**: Cap total API spending
@@ -108,9 +110,33 @@ To run the pipeline daily at the configured time (TODO, Fix scheduler):
 python3 scheduler/daily_scheduler.py
 ```
 
+## 🖥️ GUI Dashboard
+
+After running the pipeline at least once, you can explore the results using the interactive Streamlit dashboard:
+
+```bash
+./run_gui.sh
+```
+
+Or run it directly:
+
+```bash
+streamlit run gui/gui.py --server.port 8501 --server.address localhost
+```
+
+The dashboard provides:
+
+- **Score filtering** — Adjust sliders for ROI, relevance, pain score, and emotion score to focus on the posts that matter most
+- **Lead type & subreddit filters** — Multi-select filters to narrow results by lead type or source subreddit
+- **Sorting** — Sort by any score metric or post date, ascending or descending
+- **Pagination** — Browse through large result sets 10 posts at a time
+- **Post cards** — Each post displays scores, pain point summary, tags, lead type, and a link to the original Reddit thread
+- **Expandable details** — Click into any post to read the body text and AI-generated justification
+- **Summary statistics** — Sidebar shows total posts, average relevance, pain, and emotion scores for the current filter
+
 ## 📊 Results
 
-Results are stored in a SQLite database at `data/db.sqlite`. You can query it using:
+Results are stored in a SQLite database at `data/db.sqlite`. Besides the GUI, you can query it directly:
 
 ```sql
 -- Today's top leads
@@ -125,31 +151,42 @@ WHERE tags LIKE '%serverless%'
 ORDER BY processed_at DESC;
 ```
 
-You can also use the included results viewer:
-
-```
-python check_results.py stats       # Show database statistics
-python check_results.py top -n 5    # Show top 5 posts
-python check_results.py tag serverless  # Show posts with the 'serverless' tag
-```
-
 ## 📂 Project Structure
 
 ```
-cronlytic-reddit-scraper/
+Reddit_Scrapper/
 ├── config/                  # Configuration files
-├── data/                    # Database and data storage
+│   ├── config.yaml          # Main configuration
+│   └── config_loader.py     # Config + prompt loading
 ├── db/                      # Database interaction
+│   ├── schema.py            # Table definitions
+│   ├── reader.py            # Read queries
+│   ├── writer.py            # Write operations
+│   └── cleaner.py           # Old entry cleanup
 ├── gpt/                     # OpenAI GPT integration
+│   ├── batch_api.py         # Batch job submission & polling
+│   ├── filters.py           # Pre-filtering prompt builder
+│   ├── insights.py          # Deep insight prompt builder
 │   └── prompts/             # Prompt templates
-├── logs/                    # Application logs
+│       ├── filter.txt
+│       ├── insight.txt
+│       ├── community_discovery.txt
+│       └── community_discovery_system.txt
+├── gui/                     # Web dashboard
+│   └── gui.py               # Streamlit application
 ├── reddit/                  # Reddit API interaction
-├── scheduler/               # Scheduling components
+│   ├── scraper.py           # Post & comment scraping
+│   ├── discovery.py         # Exploratory subreddit discovery
+│   └── rate_limiter.py      # API rate limiting
+├── scheduler/               # Scheduling & cost tracking
+│   ├── runner.py            # Main pipeline orchestration
+│   └── cost_tracker.py      # Monthly budget tracking
 ├── utils/                   # Utility functions
-├── .env                     # Environment variables (create from .env.template)
-├── .env.template            # Template for .env file
-├── check_results.py         # Tool for viewing analysis results
-├── main.py                  # Main application entry point
+│   ├── helpers.py           # Token estimation, sanitization
+│   └── logger.py            # Logging setup
+├── .env.template            # Template for environment variables
+├── main.py                  # Application entry point
+├── run_gui.sh               # GUI launcher script
 └── requirements.txt         # Python dependencies
 ```
 
@@ -159,12 +196,35 @@ The application includes several safeguards to control API costs:
 
 - Monthly budget cap (configurable in `config.yaml`)
 - Efficient batch processing using OpenAI's Batch API
+- Parallel batch submission with token-aware scheduling
+- Partial result recovery from expired batches
 - Pre-filtering with less expensive models before using more powerful models
 - Cost tracking and logging
 
-## 📝 License
+## Core Functionality
+| Feature                                   | Status | Notes                                                 |
+| ----------------------------------------- | ------ | ----------------------------------------------------- |
+| **Reddit Scraping (Posts & Comments)**    | ✅ Done | Age-filtered, deduplicated, tracked via history table |
+| **Primary & Exploratory Subreddit Logic** | ✅ Done | With refreshable `exploratory_subreddits.json`        |
+| **GPT Filtering**                         | ✅ Done | Via batch API, scoring + threshold-based selection    |
+| **GPT Insight Extraction**                | ✅ Done | With batch API, structured JSON, ROI + tags           |
+| **SQLite Local DB Storage**               | ✅ Done | Full schema, type handling (`post`/`comment`)         |
+| **Rate Limiting**                         | ✅ Done | Real limiter applied to avoid Reddit bans             |
+| **Budget Control**                        | ✅ Done | Tracks monthly cost, blocks over-budget batches       |
+| **Daily Runner Pipeline**                 | ✅ Done | Logs step-by-step, fail-safe batch handling           |
+| **Parallel Batch Processing**             | ✅ Done | Token-aware scheduling, partial result recovery       |
+| **Cached Summaries → GPT Discovery**      | ✅ Done | Based on post text, fallback if prompt fails          |
+| **Comment scraping toggle**               | ✅ Done | Controlled via config key (`include_comments`)        |
+| **Retry on GPT Batch Failures**           | ✅ Done | With exponential backoff and item-level retry         |
+| **Streamlit GUI Dashboard**               | ✅ Done | Filter, sort, browse, and analyze results visually    |
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## Future Improvements
+| Feature                                   | Status                     | Suggestion                                   |
+| ----------------------------------------- | -------------------------- | -------------------------------------------- |
+| **Parallel subreddit fetching**           | 🟡 Manual (sequential)     | Consider async/threaded fetch in future      |
+| **Tagged CSV Export / CLI**               | 🟡 Missing                 | Useful for non-technical review/debug        |
+| **Multi-language / non-English handling** | 🟡 Not supported           | Detect & skip or flag for English-only use   |
+| **Unit tests / mocks**                    | 🟡 Not present             | Add test coverage for scoring and DB logic   |
 
 ## 👥 Contributors
 
@@ -174,37 +234,14 @@ Thanks to the following people who have contributed to this project:
 |-------------|--------------|
 | [@Mohamedsaleh14](https://github.com/Mohamedsaleh14) | Creator & maintainer |
 | [@Dieterbe](https://github.com/Dieterbe) | Bug fixes, prompt system refactoring, enhanced logging, GUI, batch optimization, and many quality-of-life improvements |
+| [Claude Code](https://claude.ai/claude-code) | AI pair programmer — code implementation, issue triage, and PR integration |
 
 ## 🙏 Acknowledgements
 
 - [PRAW (Python Reddit API Wrapper)](https://praw.readthedocs.io/)
 - [OpenAI API](https://platform.openai.com/docs/api-reference)
 - [APScheduler](https://apscheduler.readthedocs.io/)
-
-## Core Functionality (Implemented):
-| Feature                                   | Status | Notes                                                 |
-| ----------------------------------------- | ------ | ----------------------------------------------------- |
-| **Reddit Scraping (Posts & Comments)**    | ✅ Done | Age-filtered, deduplicated, tracked via history table |
-| **Primary & Exploratory Subreddit Logic** | ✅ Done | With refreshable `exploratory_subreddits.json`        |
-| **GPT-4o Mini Filtering**                 | ✅ Done | Via batch API, scoring + threshold-based selection    |
-| **GPT-4.1 Insight Extraction**            | ✅ Done | With batch API, structured JSON, ROI + tags           |
-| **SQLite Local DB Storage**               | ✅ Done | Full schema, type handling (`post`/`comment`)         |
-| **Rate Limiting**                         | ✅ Done | Real limiter applied to avoid Reddit bans             |
-| **Budget Control**                        | ✅ Done | Tracks monthly cost, blocks over-budget batches       |
-| **Daily Runner Pipeline**                 | ✅ Done | Logs step-by-step, fail-safe batch handling           |
-| **Batch API Integration**                 | ✅ Done | With file-based payloads + polling + result fetch     |
-| **Cached Summaries → GPT Discovery**      | ✅ Done | Based on post text, fallback if prompt fails          |
-| **Comment scraping toggle**               | ✅ Done | Controlled via config key (`include_comments`)        |
-| **Retry on GPT Batch Failures**           | ✅ Done | Can retry 10 times with exponential backoff           |
-
-## Missing Features
-| Feature                                   | Status                     | Suggestion                                   |
-| ----------------------------------------- | -------------------------- | -------------------------------------------- |
-| **Parallel subreddit fetching**           | 🟡 Manual (sequential)     | Consider async/threaded fetch in future      |
-| **Tagged CSV Export / CLI**               | 🟡 Missing                 | Useful for non-technical review/debug        |
-| **Multi-language / non-English handling** | 🟡 Not supported           | Detect & skip or flag for English-only use   |
-| **Unit tests / mocks**                    | 🟡 Not present             | Add test coverage for scoring and DB logic   |
-| **Dashboard/UI**                          | ❌ Out of scope (by design) | CLI / SQLite interface is sufficient for now |
+- [Streamlit](https://streamlit.io/)
 
 ## 🙋‍♂️ Why This Exists
 
@@ -231,6 +268,8 @@ This project uses open source libraries, which are governed by their own license
 - [PRAW](https://github.com/praw-dev/praw) — MIT License
 - [APScheduler](https://github.com/agronholm/apscheduler) — MIT License
 - [OpenAI Python SDK](https://github.com/openai/openai-python) — MIT License
-- [Reddit API](https://www.reddit.com/dev/api/) — Subject to Reddit’s [Terms of Service](https://www.redditinc.com/policies/data-api-terms)
+- [Streamlit](https://github.com/streamlit/streamlit) — Apache License 2.0
+- [Pandas](https://github.com/pandas-dev/pandas) — BSD 3-Clause License
+- [Reddit API](https://www.reddit.com/dev/api/) — Subject to Reddit's [Terms of Service](https://www.redditinc.com/policies/data-api-terms)
 
 Use of this project must also comply with these third-party licenses and terms.
