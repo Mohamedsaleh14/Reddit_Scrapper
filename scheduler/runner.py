@@ -6,7 +6,7 @@ import os
 import glob
 from datetime import datetime
 import time
-from reddit.scraper import scrape_all_configured_subreddits
+from reddit.scraper import scrape_subreddits
 from db.writer import insert_post, update_post_filter_scores, update_post_insight, mark_insight_processed
 from db.reader import get_top_insights_from_today, get_posts_by_ids
 from db.schema import create_tables
@@ -113,6 +113,7 @@ def clean_old_batch_files(folder="data/batch_responses", days_old=None):
     log.info(f"Cleaned up {deleted} old batch response files older than {days_old} days.")
 
 def get_high_potential_ids_from_filter_results(score_threshold=7.0):
+    processed = 0
     high_ids = set()
     weights = config["scoring"]
     for path in glob.glob("data/batch_responses/filter_result_*.jsonl"):
@@ -120,6 +121,7 @@ def get_high_potential_ids_from_filter_results(score_threshold=7.0):
             for line in f:
                 try:
                     result = json.loads(line)
+                    processed += 1
                     post_id = result["custom_id"]
                     content = result["response"]["body"]["choices"][0]["message"]["content"]
                     scores = json.loads(content)
@@ -133,6 +135,7 @@ def get_high_potential_ids_from_filter_results(score_threshold=7.0):
                         update_post_filter_scores(post_id, scores)
                 except Exception as e:
                     log.error(f"Error parsing filter result line: {e}")
+    log.info(f"Processed {processed} filter results, found {len(high_ids)} high-potential posts")
     return high_ids
 
 def run_daily_pipeline():
@@ -149,7 +152,7 @@ def run_daily_pipeline():
     clean_old_entries()
 
     log.info("Step 2: Scraping Reddit posts...")
-    scraped_posts = scrape_all_configured_subreddits()
+    scraped_posts = scrape_subreddits()
     if not scraped_posts:
         log.warning("No posts found to analyze. Exiting pipeline.")
         return

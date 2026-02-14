@@ -13,6 +13,7 @@ def clean_old_entries():
     """Remove posts and history entries older than the configured retention period."""
     retention_days = config["database"]["retention_days"]
     cutoff_date = (datetime.utcnow() - timedelta(days=retention_days)).isoformat()
+    log.debug(f"cutoff date is {cutoff_date}")
 
     log.info(f"Cleaning entries older than {retention_days} days...")
 

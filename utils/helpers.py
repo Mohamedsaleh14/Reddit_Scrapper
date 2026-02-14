@@ -60,7 +60,8 @@ def truncate(text: str, max_tokens: int = 1000) -> str:
     return ENCODER.decode(tokens[:max_tokens])
 
 def sanitize_text(text: str) -> str:
-    """Remove emojis and non-printable unicode characters from the input."""
+    #  TODO confirm *which* emojis/emoticons are removed. some are probably harmless, even meaningful and therefore desirable
+    """Remove some emojis and non-printable unicode characters from the input."""
     if not isinstance(text, str):
         return ""
     emoji_pattern = re.compile("[\U00010000-\U0010FFFF]", flags=re.UNICODE)
