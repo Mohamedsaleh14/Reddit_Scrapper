@@ -32,6 +32,9 @@ openai:
   monthly_budget_usd: 100           # Cost cap for safety
   max_tokens_per_post: 1000         # Estimate for budgeting
   cache_input: true                 # Reuse prompt if post is nearly identical
+  enqueued_token_limits:             # Max enqueued tokens per model (OpenAI tier limits)
+    gpt-5.1: 900_000
+  default_enqueued_token_limit: 5_000_000
 
 # Scoring weights (used in filtering and final ranking)
 scoring:

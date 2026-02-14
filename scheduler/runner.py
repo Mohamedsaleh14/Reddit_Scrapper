@@ -72,8 +72,12 @@ def _estimate_batch_tokens(batch_items):
 
 
 
+ENQUEUED_TOKEN_LIMITS = config.get("openai", {}).get("enqueued_token_limits", {})
+DEFAULT_ENQUEUED_TOKEN_LIMIT = config.get("openai", {}).get("default_enqueued_token_limit", 5_000_000)
+
+
 def submit_batches_parallel(all_sub_batches, model, generate_file_fn, label,
-                            max_retries=3, enqueued_token_limit=5_000_000):
+                            max_retries=3, enqueued_token_limit=None):
     """Submit batches with token-aware scheduling and parallel polling.
 
     Flow:
@@ -83,6 +87,8 @@ def submit_batches_parallel(all_sub_batches, model, generate_file_fn, label,
     4. When capacity frees up, submit more batches.
     5. Repeat until all batches are processed.
     """
+    if enqueued_token_limit is None:
+        enqueued_token_limit = ENQUEUED_TOKEN_LIMITS.get(model, DEFAULT_ENQUEUED_TOKEN_LIMIT)
     result_paths = []
     pending = {}  # batch_id -> {"items": [...], "retries": int, "tokens": int}
     enqueued_tokens = 0  # tokens currently in-flight at OpenAI
