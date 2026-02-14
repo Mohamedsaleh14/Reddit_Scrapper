@@ -7,3 +7,6 @@ apscheduler>=3.10.1
 requests>=2.31.0
 pyyaml>=6.0
 tabulate>=0.9.0
+# for the GUI
+streamlit>=1.28.0
+pandas>=2.0.0

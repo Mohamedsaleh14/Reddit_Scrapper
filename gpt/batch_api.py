@@ -11,7 +11,6 @@ from utils.logger import setup_logger
 log = setup_logger()
 config = get_config()
 
-BATCH_FILE_PATH = "data/batch_requests.jsonl"
 RESPONSE_DIR = "data/batch_responses"
 
 def generate_batch_payload(requests: list[dict], model: str) -> str:
