@@ -2,6 +2,8 @@ You are an expert in market research and product opportunity discovery. Your goa
 
 Based on the following top-performing Reddit posts (titles and summaries), recommend a ranked list of 12 adjacent subreddits that are likely rich in product-worthy pain points and unmet needs.
 
+{SUMMARIES}
+
 For each recommended subreddit, provide:
 - A short rationale
 - An estimate of:
