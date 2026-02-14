@@ -3,42 +3,34 @@ from openai import OpenAI
 import json
 from config.config_loader import get_config
 from utils.logger import setup_logger
+from config.config_loader import PROMPT_COMMUNITY_DISCOVERY, PROMPT_COMMUNITY_DISCOVERY_SYSTEM
 
 log = setup_logger()
 config = get_config()
-PROMPT_PATH = "gpt/prompts/community_discovery.txt"
 
 client = OpenAI()
 
-def load_discovery_prompt_template():
-    """Load the community discovery prompt template from file."""
-    try:
-        with open(PROMPT_PATH, 'r', encoding='utf-8') as f:
-            return f.read()
-    except Exception as e:
-        log.error(f"Error loading community discovery prompt template: {str(e)}")
-        return (
-            "Based on the following Reddit post summaries, suggest a ranked list of 12 relevant subreddits "
-            "with pain points Cronlytic could solve. Respond in JSON format."
-        )
-
-DISCOVERY_PROMPT_TEMPLATE = load_discovery_prompt_template()
 
 def build_discovery_prompt(top_post_summaries: list[str]) -> list:
     """Builds the GPT prompt for discovering adjacent subreddits using template."""
     joined = "\n".join(f"- {summary}" for summary in top_post_summaries)
-    prompt_content = DISCOVERY_PROMPT_TEMPLATE.replace("{SUMMARIES}", joined)
 
     return [
-        {"role": "system", "content": "You are an expert in developer marketing and community discovery."},
-        {"role": "user", "content": prompt_content}
+        {
+            "role": "system",
+            "content": config['prompts'][PROMPT_COMMUNITY_DISCOVERY_SYSTEM],
+        },
+        {
+            "role": "user",
+            "content": config['prompts'][PROMPT_COMMUNITY_DISCOVERY].replace("{SUMMARIES}", joined),
+        }
     ]
 
 def discover_adjacent_subreddits(summaries: list[str], model: str = None) -> list:
     """Uses GPT-4.1 (from config) to suggest exploratory subreddits."""
     model = model or config["openai"].get("model_deep", "gpt-4.1")
     log.info(f"Running discovery with {len(summaries)} post summaries using model: {model}")
-    
+
     prompt = build_discovery_prompt(summaries)
 
     try:

@@ -38,17 +38,21 @@ def insert_post(post: dict, community_type: str = "primary"):
             post.get("type", "post")
         ))
 
-        conn.execute("""
-        INSERT OR IGNORE INTO history (id, processed_at)
-        VALUES (?, ?)
-        """, (
-            post["id"],
-            datetime.utcnow().isoformat()
-        ))
-
         conn.commit()
     except sqlite3.Error as e:
         print(f"[SQLite Insert Error] {e}")
+
+def mark_posts_in_history(post_ids: list[str]):
+    """Bulk-insert post IDs into the history table after AI processing succeeds."""
+    conn = _get_connection()
+    try:
+        conn.executemany(
+            "INSERT OR IGNORE INTO history (id, processed_at) VALUES (?, ?)",
+            [(pid, datetime.now(UTC).isoformat()) for pid in post_ids]
+        )
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"[SQLite mark_posts_in_history Error] {e}")
 
 def update_post_filter_scores(post_id: str, scores: dict):
     """Update filtering phase scores only (relevance, emotion, pain)."""

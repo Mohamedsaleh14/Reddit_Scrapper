@@ -7,7 +7,7 @@ from utils.logger import setup_logger
 from db.schema import create_tables
 from scheduler.cost_tracker import initialize_cost_tracking
 from utils.helpers import ensure_directory_exists
-
+from gpt.batch_api import RESPONSE_DIR
 
 def setup_environment():
     """Initialize the environment for the application."""
@@ -15,7 +15,7 @@ def setup_environment():
     log.info("Setting up environment...")
 
     ensure_directory_exists("data")
-    ensure_directory_exists("data/batch_responses")
+    ensure_directory_exists(RESPONSE_DIR)
     ensure_directory_exists("logs")
 
     try:

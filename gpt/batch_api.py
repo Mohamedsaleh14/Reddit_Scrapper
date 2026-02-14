@@ -11,7 +11,6 @@ from utils.logger import setup_logger
 log = setup_logger()
 config = get_config()
 
-BATCH_FILE_PATH = "data/batch_requests.jsonl"
 RESPONSE_DIR = "data/batch_responses"
 
 def generate_batch_payload(requests: list[dict], model: str) -> str:
@@ -22,15 +21,19 @@ def generate_batch_payload(requests: list[dict], model: str) -> str:
 
     with open(path, "w", encoding="utf-8") as f:
         for prompt in requests:
+            body = {
+                    "model": model,
+                    "messages": prompt["messages"],
+                    "response_format": {"type": "json_object"},
+                }
+            # gpt-5+ models only support the default temperature (1)
+            if not model.startswith("gpt-5"):
+                body["temperature"] = 0
             f.write(json.dumps({
                 "custom_id": prompt.get("id", str(uuid.uuid4())),
                 "method": "POST",
                 "url": "/v1/chat/completions",
-                "body": {
-                    "model": model,
-                    "messages": prompt["messages"],
-                    "temperature": 0,
-                }
+                "body": body,
             }) + "\n")
 
     log.info(f"Batch payload generated at: {path} with {len(requests)} entries")
@@ -106,6 +109,42 @@ def download_batch_results(batch_id: str, save_path: str):
         f.write(response.read())
 
     log.info(f"Saved results to {save_path}")
+
+def download_batch_results_if_available(batch_id: str, save_path: str) -> bool:
+    """Downloads results from a batch if output_file_id exists, regardless of batch status.
+
+    This handles expired batches that may have partial results which
+    download_batch_results() cannot retrieve (it requires status == 'completed').
+    """
+    batch = openai.batches.retrieve(batch_id)
+    output_file_id = batch.output_file_id
+
+    if not output_file_id:
+        log.warning(f"No output file available for batch {batch_id} (status: {batch.status})")
+        return False
+
+    response = openai.files.content(output_file_id)
+    with open(save_path, "wb") as f:
+        f.write(response.read())
+
+    log.info(f"Saved available results from batch {batch_id} (status: {batch.status}) to {save_path}")
+    return True
+
+
+def get_processed_custom_ids(result_path: str) -> set:
+    """Reads a results JSONL file and returns the set of custom_id values that were processed."""
+    processed = set()
+    with open(result_path, "r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                result = json.loads(line)
+                custom_id = result.get("custom_id")
+                if custom_id:
+                    processed.add(custom_id)
+            except (json.JSONDecodeError, KeyError):
+                continue
+    return processed
+
 
 def add_estimated_batch_cost(requests: list[dict], model: str):
     """Estimate and record the cost of the batch job using accurate pricing."""

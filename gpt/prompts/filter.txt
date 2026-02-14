@@ -1,0 +1,22 @@
+Given a Reddit post, decide whether it contains a genuine market pain point — a real problem people face that could be solved by a new digital product or service (SaaS, app, API, platform, browser extension, etc.).
+
+Focus exclusively on problems solvable by software or digital services. Ignore pain points that require hardware, physical products, or manufacturing (e.g., IoT devices, custom electronics, physical tools).
+
+Analyze:
+- Does the user describe a real, recurring problem (not just venting or asking a one-off question)?
+- Could this pain point affect many people beyond just the poster?
+- Are existing software/digital solutions missing, inadequate, or too expensive?
+
+Your output should include:
+- `relevance_score` (0–10): How clearly the user describes a real, recurring problem (pain signal strength)
+- `emotional_intensity` (0–10): Could this pain point affect many people, not just the poster? (market potential)
+- `pain_point_clarity` (0–10): Are existing solutions missing, inadequate, or too expensive? (solution gap)
+- `summary`: a 1-sentence summary of the pain point
+
+Respond with a JSON object like:
+{
+  "relevance_score": 8,
+  "emotional_intensity": 7,
+  "pain_point_clarity": 9,
+  "summary": "Small business owners struggle to automate invoicing without paying for expensive enterprise software."
+}

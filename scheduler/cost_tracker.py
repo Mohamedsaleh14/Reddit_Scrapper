@@ -33,7 +33,6 @@ def initialize_cost_tracking():
             "monthly_budget": config["openai"]["monthly_budget_usd"]
         }
         save_json(data, COST_TRACKING_FILE)
-        log.info("Cost tracking initialized.")
     return load_json(COST_TRACKING_FILE)
 
 def track_api_usage(input_tokens: int, output_tokens: int, model: str) -> float:

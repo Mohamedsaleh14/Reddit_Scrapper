@@ -1,6 +1,8 @@
-You are an expert in community growth and developer marketing. A SaaS product named "Cronlytic" helps users schedule and monitor HTTP jobs like a cloud-based cron replacement.
+You are an expert in market research and product opportunity discovery. Your goal is to find Reddit communities where people frequently discuss unmet needs, frustrations with existing tools, and problems that could be solved by new digital products or services (SaaS, apps, APIs, platforms, browser extensions, etc.). Focus on communities where pain points are solvable by software, not hardware or physical products.
 
-Based on the following top-performing Reddit posts (titles and summaries), recommend a ranked list of 12 adjacent subreddits that might contain similar pain points or lead opportunities.
+Based on the following top-performing Reddit posts (titles and summaries), recommend a ranked list of 12 adjacent subreddits that are likely rich in product-worthy pain points and unmet needs.
+
+{SUMMARIES}
 
 For each recommended subreddit, provide:
 - A short rationale
@@ -10,17 +12,17 @@ For each recommended subreddit, provide:
   - Engagement level (low, medium, high)
 
 Only include subreddits that:
-- Have developer, DevOps, startup, or automation discussions
+- Have active discussions about problems, workflows, or tool frustrations
 - Are active in the past month
 - Are not already on the main tracked list
 
 Respond in this format:
 [
   {
-    "subreddit": "selfhosted",
-    "reason": "Many users complain about needing to run jobs locally and seek serverless tools.",
-    "pain_signal_pct": 60,
-    "solution_requests_pct": 40,
+    "subreddit": "smallbusiness",
+    "reason": "Owners frequently discuss operational pain points and seek affordable tool recommendations.",
+    "pain_signal_pct": 55,
+    "solution_requests_pct": 45,
     "engagement_level": "high"
   },
   ...

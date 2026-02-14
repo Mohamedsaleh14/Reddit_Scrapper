@@ -30,17 +30,6 @@ def is_already_processed(post_id: str) -> bool:
         print(f"SQLite error during is_already_processed: {e}")
         return False
 
-def get_top_posts_for_today(limit=10) -> list:
-    today = datetime.now(UTC).date().isoformat()
-    conn = _get_connection()
-    rows = conn.execute("""
-        SELECT * FROM posts
-        WHERE processed_at >= ?
-        ORDER BY roi_weight DESC, relevance_score DESC
-        LIMIT ?
-    """, (today, limit)).fetchall()
-    return [dict(row) for row in rows]
-
 def get_all_posts_by_tag(tag: str) -> list:
     conn = _get_connection()
     rows = conn.execute("""
