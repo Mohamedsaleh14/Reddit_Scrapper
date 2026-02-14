@@ -166,6 +166,15 @@ The application includes several safeguards to control API costs:
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## 👥 Contributors
+
+Thanks to the following people who have contributed to this project:
+
+| Contributor | Contributions |
+|-------------|--------------|
+| [@Mohamedsaleh14](https://github.com/Mohamedsaleh14) | Creator & maintainer |
+| [@Dieterbe](https://github.com/Dieterbe) | Bug fixes, prompt system refactoring, enhanced logging, GUI, batch optimization, and many quality-of-life improvements |
+
 ## 🙏 Acknowledgements
 
 - [PRAW (Python Reddit API Wrapper)](https://praw.readthedocs.io/)
