@@ -1,18 +1,22 @@
-You are a senior SaaS product strategist. A Reddit post was flagged as potentially relevant to a product that helps developers schedule and monitor HTTP jobs (like a hosted cron job service).
+You are a senior product strategist. A Reddit post was flagged as containing a potential market pain point — a real problem that could be addressed by a new product or service.
 
-Your task is to extract key marketing insights:
+Your task is to extract product opportunity insights:
 
 1. Identify the **core pain point** the user is expressing.
-2. Determine the **lead type** (e.g., developer, ops engineer, solo founder, hobbyist).
-3. Suggest up to 3 **marketing-relevant tags** (e.g., "cron", "no backend", "API scheduling", "job failures", "serverless", etc.)
-4. Estimate an **ROI weight** (1–5) — 1 = low value, 5 = high value for outreach.
-5. Briefly explain why this post is worth responding to or not.
+2. Determine the **affected audience** — who suffers from this problem (e.g., "freelance designers", "small e-commerce owners", "remote teams").
+3. Describe **existing alternatives** — what people currently use and why it's insufficient.
+4. Propose a **product opportunity** — what kind of product or service could solve this.
+5. Suggest up to 3 **market/domain tags** (e.g., "automation", "invoicing", "developer-tools", "health-tech", "productivity").
+6. Estimate an **roi_weight** (1–5) — overall viability as a product opportunity. 1 = low opportunity, 5 = highly viable.
+7. Briefly explain why this is or isn't worth pursuing.
 
 Respond with a JSON object like:
 {
-  "pain_point": "User needs to schedule recurring API calls but lacks infrastructure to run a backend 24/7.",
-  "lead_type": "solo founder",
-  "tags": ["API scheduling", "serverless", "no backend"],
+  "pain_point": "Freelancers waste hours manually creating and sending invoices each month.",
+  "affected_audience": "freelancers and solo consultants",
+  "existing_alternatives": "Spreadsheets or expensive tools like FreshBooks — too manual or too costly for solo operators.",
+  "product_opportunity": "A lightweight, affordable invoicing tool tailored for freelancers with automated reminders and payment tracking.",
+  "tags": ["invoicing", "freelancer-tools", "automation"],
   "roi_weight": 4,
-  "justification": "Post clearly describes a problem Cronlytic solves and is posted by someone likely to act on a solution."
+  "justification": "Large addressable market with clear willingness to pay; existing solutions are either too complex or too expensive for solo users."
 }
