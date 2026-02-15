@@ -224,8 +224,22 @@ def submit_batches_parallel(all_sub_batches, model, generate_file_fn, label,
                         log.error(f"Capacity still blocked after probing. Deferring batch.")
                         save_failed_batch(batch_items, label)
                 else:
-                    log.error(f"Batch {batch_id} failed after {max_retries} retries. Deferring.")
-                    save_failed_batch(batch_items, label)
+                    # All retries exhausted but probes succeed — the batch is
+                    # too large for OpenAI to accept.  Split it in half and
+                    # re-queue both halves with fresh retry counters.
+                    if len(batch_items) > 1:
+                        mid = len(batch_items) // 2
+                        half_a, half_b = batch_items[:mid], batch_items[mid:]
+                        log.warning(
+                            f"Batch {batch_id} failed after {max_retries} retries "
+                            f"({len(batch_items)} items). Splitting into 2 halves "
+                            f"({len(half_a)} + {len(half_b)}) and re-queuing.")
+                        submit_queue.insert(0, (half_b, 0))
+                        submit_queue.insert(0, (half_a, 0))
+                    else:
+                        log.error(f"Batch {batch_id} failed after {max_retries} retries "
+                                  f"(single item — cannot split). Deferring.")
+                        save_failed_batch(batch_items, label)
                 break  # exit submit loop to wait/re-check
             elif status == "validating":
                 # Still validating after timeout — treat as tentatively confirmed
