@@ -56,10 +56,15 @@ def load_posts_with_insights(db_path: str, insights_dir: str) -> pd.DataFrame:
 
     # Add insight data to posts dataframe
     posts_df['pain_point'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('pain_point', ''))
-    posts_df['lead_type'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('lead_type', ''))
     posts_df['tags'] = posts_df['id'].map(lambda x: ', '.join(insights_data.get(x, {}).get('tags', [])))
     posts_df['roi_weight'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('roi_weight', 0))
     posts_df['justification'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('justification', ''))
+    posts_df['product_opportunity'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('product_opportunity', ''))
+    posts_df['affected_audience'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('affected_audience', ''))
+    posts_df['existing_alternatives'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('existing_alternatives', ''))
+    posts_df['build_complexity'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('build_complexity', ''))
+    posts_df['business_model'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('business_model', ''))
+    posts_df['business_type'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('business_type', ''))
 
     return posts_df
 
@@ -81,15 +86,19 @@ def display_post_card(post: pd.Series):
         with col5:
             st.info(post['pain_point'])
 
-    # put a row here with lead type and the tags
+    # Title and tags row
     col1, col2 = st.columns([1, 1])
     with col1:
         st.markdown(f"[{post['title']}](<{post['url']}>)")
     with col2:
         tags_list = [tag.strip() for tag in post['tags'].split(',') if tag.strip()]
-        tags_html = f"""
-        <span style="background-color: #4CAF50; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">{post['lead_type']}</span> """ +"".join(map(lambda tag: f"<span style='background-color: #2196F3; color: white; padding: 2px 6px; border-radius: 8px; font-size: 11px; margin-right: 4px; display: inline-block; margin-bottom: 2px;'>{tag}</span>", tags_list))
+        tags_html = "".join(map(lambda tag: f"<span style='background-color: #2196F3; color: white; padding: 2px 6px; border-radius: 8px; font-size: 11px; margin-right: 4px; display: inline-block; margin-bottom: 2px;'>{tag}</span>", tags_list))
         st.markdown(tags_html, unsafe_allow_html=True)
+
+    # Product opportunity section
+    if post.get('product_opportunity'):
+        st.success(f"💡 **Suggested Solution:** {post['product_opportunity']}")
+
     # Add some white space
     st.markdown("")
 
@@ -102,6 +111,24 @@ def display_post_card(post: pd.Series):
         if post['justification']:
             st.markdown("**Justification:**")
             st.markdown(post['justification'])
+
+        # Show additional insight fields
+        details_parts = []
+        if post.get('affected_audience'):
+            details_parts.append(f"**Affected Audience:** {post['affected_audience']}")
+        if post.get('business_type'):
+            details_parts.append(f"**Business Type:** {post['business_type']}")
+        if post.get('existing_alternatives'):
+            details_parts.append(f"**Existing Alternatives:** {post['existing_alternatives']}")
+        if post.get('build_complexity'):
+            details_parts.append(f"**Build Complexity:** {post['build_complexity']}")
+        if post.get('business_model'):
+            details_parts.append(f"**Business Model:** {post['business_model']}")
+
+        if details_parts:
+            st.markdown("---")
+            for part in details_parts:
+                st.markdown(part)
 
 def main():
     st.title("📊 Reddit Posts Insights Viewer")
@@ -164,14 +191,6 @@ def main():
     pain_range = create_safe_slider("Pain Score Range", df['pain_score'], "pain")
     emotion_range = create_safe_slider("Emotion Score Range", df['emotion_score'], "emotion")
 
-    # Lead type filter
-    lead_types = df['lead_type'].unique().tolist()
-    selected_lead_types = st.sidebar.multiselect(
-        "Lead Types",
-        options=lead_types,
-        default=lead_types
-    )
-
     # Subreddit filter
     subreddits = df['subreddit'].unique().tolist()
     selected_subreddits = st.sidebar.multiselect(
@@ -204,7 +223,6 @@ def main():
         (df['pain_score'] <= pain_range[1]) &
         (df['emotion_score'] >= emotion_range[0]) &
         (df['emotion_score'] <= emotion_range[1]) &
-        (df['lead_type'].isin(selected_lead_types)) &
         (df['subreddit'].isin(selected_subreddits))
     ]
 

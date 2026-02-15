@@ -80,12 +80,11 @@ def update_post_filter_scores(post_id: str, scores: dict):
         print(f"[SQLite update_post_filter_scores Error] {e}")
 
 def update_post_insight(post_id: str, insight: dict):
-    """Update deeper insights (lead_type, tags, roi_weight). Safe from overwriting with nulls."""
+    """Update deeper insights (tags, roi_weight). Safe from overwriting with nulls."""
     conn = _get_connection()
     cursor = conn.cursor()
 
     fields = {
-        "lead_type": insight.get("lead_type"),
         "tags": ", ".join(insight["tags"]) if "tags" in insight else None,
         "roi_weight": insight.get("roi_weight")
     }

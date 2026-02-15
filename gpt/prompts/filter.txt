@@ -20,9 +20,29 @@ Deprioritize:
 
 Your output should include:
 - `relevance_score` (0-10): How clearly the user describes a real, recurring problem (pain signal strength)
+  - 0 = no real problem, just idle curiosity or hypothetical musing
+  - 3 = vague complaint with no evidence it recurs or affects others
+  - 5 = clear problem described, but unclear how often it happens or how many people share it
+  - 7 = recurring problem with specific details (frequency, failed attempts, workarounds mentioned)
+  - 10 = urgent, well-documented recurring pain with concrete evidence (metrics, multiple users confirming, money spent)
 - `emotional_intensity` (0-10): Could this pain point affect many people, not just the poster? (market breadth)
+  - 0 = affects only this one person in a unique situation
+  - 3 = niche group (fewer than ~1K people likely affected)
+  - 5 = moderate audience (thousands of people in a recognizable segment)
+  - 7 = large segment (tens of thousands — e.g., all freelance accountants, all Shopify store owners)
+  - 10 = widespread problem affecting millions (e.g., all remote workers, all small business owners)
 - `pain_point_clarity` (0-10): Are existing solutions missing, inadequate, or too expensive? (solution gap)
+  - 0 = existing solutions fully address the problem at a reasonable price
+  - 3 = solutions exist but are mildly inconvenient or slightly overpriced
+  - 5 = solutions are too expensive, too complex, or missing one key feature
+  - 7 = major gaps — users resorting to manual workarounds, spreadsheets, or duct-tape integrations
+  - 10 = no viable solution exists; significant time or money wasted on the problem regularly
 - `implementability_score` (0-10): Could a small team realistically build an MVP? Consider technical complexity, data requirements, and regulatory barriers. 10 = straightforward to build, 0 = requires massive resources or expertise
+  - 0 = requires massive infrastructure, regulatory approval, or domain-specific breakthroughs
+  - 3 = needs specialized ML/data pipelines, rare domain expertise, or complex partnerships
+  - 5 = moderate complexity — some integrations, moderate data needs, or niche technical skills
+  - 7 = standard web/mobile app leveraging existing APIs and services; one dev can build it
+  - 10 = simple CRUD app or browser extension; a solo dev can ship an MVP in weeks
 - `summary`: a 1-sentence summary of the pain point
 
 Respond with a JSON object like:

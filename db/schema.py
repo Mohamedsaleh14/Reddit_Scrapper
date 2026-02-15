@@ -31,7 +31,6 @@ def create_tables():
         relevance_score REAL,
         emotion_score REAL,
         pain_score REAL,
-        lead_type TEXT,
         tags TEXT,
         roi_weight INTEGER,
         community_type TEXT,
