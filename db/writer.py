@@ -23,8 +23,8 @@ def insert_post(post: dict, community_type: str = "primary"):
         conn.execute("""
         INSERT OR IGNORE INTO posts (
             id, url, title, body, subreddit, created_utc, last_active,
-            processed_at, community_type, type, post_body
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            processed_at, community_type, type, post_body, parent_post_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             post["id"],
             post["url"],
@@ -36,7 +36,8 @@ def insert_post(post: dict, community_type: str = "primary"):
             datetime.now(UTC).date().isoformat(),
             community_type,
             post.get("type", "post"),
-            post.get("post_body", "")
+            post.get("post_body", ""),
+            post.get("parent_post_id")
         ))
 
         conn.commit()

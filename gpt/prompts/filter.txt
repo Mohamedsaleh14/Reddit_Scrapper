@@ -12,12 +12,24 @@ Analyze:
 - Does the user describe workarounds, time/money waste, or failed attempts to find a solution? (strong pain signal)
 - Could a solo developer or small team (1-3 people) realistically build an MVP in weeks to months?
 - Who would pay — businesses (B2B) or consumers (B2C)?
+- Could this become a platform with network effects, viral growth, or a broad user base (millions, not thousands)?
 
 Deprioritize:
 - Vague "wouldn't it be nice" wishes with no evidence of real suffering
 - Problems that only affect a tiny, hyper-specific audience
 - Pain points that require deep domain expertise, regulatory approval, or massive data to solve
 - Ideas that are trivially simple to build (basic CRUD, simple wrappers, landing pages, browser extensions with one function). If any decent developer can vibe-code it in a day or a week with AI tools, it has ZERO defensibility and is NOT worth pursuing. We want problems that require real system architecture, complex integrations, or deep technical work — things that take months of serious implementation to get right.
+
+Exclude entirely (score 0 across the board):
+- Legal services, law firm tools, attorney/paralegal workflows
+- Government policy, lobbying, regulatory compliance tools
+- Overseas contracts, supplier management, import/export logistics
+- Narrow industry-specific tools for a single vertical (e.g., "dental office scheduler", "trucking fleet manager") — unless the underlying problem is universal
+
+Vision — what we're looking for:
+We want **universal, consumer-scale or prosumer product ideas** that can gain massive traction. Think platform plays with network effects, tools that could attract millions of users, and products that solve broad human problems — not narrow industry verticals.
+Caliber of ideas we're after: Tinder (dating → platform), Airbnb (lodging → marketplace), n8n (automation → prosumer platform), Flo Health (period tracking → health platform). The common thread: they start with a universal pain point and grow into platforms with defensible network effects or data moats.
+If the idea only serves a niche of <10K potential users, it's not what we're looking for.
 
 Your output should include:
 - `relevance_score` (0-10): How clearly the user describes a real, recurring problem (pain signal strength)

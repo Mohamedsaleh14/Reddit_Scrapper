@@ -38,7 +38,8 @@ def build_insight_prompt(post: dict) -> List[Dict[str, str]]:
 
 def prepare_insight_batch(posts: List[dict]) -> List[Dict[str, Any]]:
     """Prepares GPT-4.1 insight batch payload."""
-    model = config["openai"].get("model_deep", "gpt-4.1")
+    provider = config["ai"]["provider"]
+    model = config["ai"][provider].get("model_deep", "gpt-4.1")
     payload = []
 
     for post in posts:

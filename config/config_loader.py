@@ -29,12 +29,39 @@ def get_config():
         "password": os.getenv("REDDIT_PASSWORD"),      # Added
     }
 
-    raw_config["openai"]["api_key"] = os.getenv("OPENAI_API_KEY")
+    raw_config["ai"]["openai"]["api_key"] = os.getenv("OPENAI_API_KEY")
+    raw_config["ai"]["anthropic"]["api_key"] = os.getenv("ANTHROPIC_API_KEY")
+
+    # Backward compatibility: expose provider-specific config at top level
+    # so existing code using config["openai"] still works during migration
+    provider = raw_config["ai"]["provider"]
+    provider_config = raw_config["ai"][provider]
+    raw_config["openai"] = {**raw_config["ai"]["openai"], **{
+        k: v for k, v in raw_config["ai"].items()
+        if k not in ("provider", "openai", "anthropic")
+    }}
 
     # Inject prompts from files
     raw_config["prompts"] = load_all_prompts()
 
     return raw_config
+
+
+def get_provider(config=None):
+    """Returns the active AI provider: 'openai' or 'anthropic'."""
+    if config is None:
+        config = get_config()
+    return config["ai"]["provider"]
+
+
+def get_model(stage, config=None):
+    """Returns the model name for a given stage ('filter' or 'deep') based on active provider."""
+    if config is None:
+        config = get_config()
+    provider = config["ai"]["provider"]
+    key = f"model_{stage}"
+    return config["ai"][provider][key]
+
 
 def load_all_prompts() -> dict:
     """Load all prompt templates from the prompts directory and return as a dictionary."""

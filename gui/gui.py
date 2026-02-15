@@ -3,8 +3,17 @@ import sqlite3
 import json
 import pandas as pd
 import os
+import re
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional
+
+# Ensure project root is importable when running via `streamlit run gui/gui.py`.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from config.config_loader import get_config
 
 # Configure Streamlit page
 st.set_page_config(
@@ -13,8 +22,33 @@ st.set_page_config(
     layout="wide"
 )
 
+def _extract_json_from_text(text: str) -> str:
+    """Extract JSON payload from markdown-fenced or plain text."""
+    if not text:
+        return text
+
+    stripped = text.strip()
+
+    # Fenced block
+    match = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", stripped, re.DOTALL | re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
+
+    # First object/array fallback
+    match = re.search(r"[\{\[].*[\}\]]", stripped, re.DOTALL)
+    if match:
+        return match.group(0).strip()
+
+    return stripped
+
+
 @st.cache_data
-def load_posts_with_insights(db_path: str, insights_dir: str) -> pd.DataFrame:
+def load_posts_with_insights(
+    db_path: str,
+    insights_dir: str,
+    provider: str,
+    data_version: float
+) -> pd.DataFrame:
     """Load posts with insight_processed=1 and join with insight data."""
 
     # Connect to SQLite database
@@ -42,15 +76,26 @@ def load_posts_with_insights(db_path: str, insights_dir: str) -> pd.DataFrame:
                 try:
                     data = json.loads(line.strip())
                     custom_id = data.get('custom_id')
+                    if not custom_id:
+                        continue
 
-                    # Extract insight content from response
-                    if (data.get('response') and
-                        data['response'].get('body') and
-                        data['response']['body'].get('choices')):
-
-                        content = data['response']['body']['choices'][0]['message']['content']
-                        insight_json = json.loads(content)
+                    if provider == "anthropic":
+                        # Anthropic format: {"custom_id": "...", "content": "...", "result_type": "..."}
+                        if data.get("result_type") != "succeeded":
+                            continue
+                        content = data.get("content", "")
+                        insight_json = json.loads(_extract_json_from_text(content))
                         insights_data[custom_id] = insight_json
+                    elif provider == "openai":
+                        # OpenAI format
+                        if (
+                            data.get('response') and
+                            data['response'].get('body') and
+                            data['response']['body'].get('choices')
+                        ):
+                            content = data['response']['body']['choices'][0]['message']['content']
+                            insight_json = json.loads(_extract_json_from_text(content))
+                            insights_data[custom_id] = insight_json
 
                 except (json.JSONDecodeError, KeyError, IndexError):
                     continue
@@ -141,8 +186,10 @@ def main():
     st.markdown("Browse and analyze Reddit posts with AI-generated insights")
 
     # Configuration
-    db_path = "data/db.sqlite"
-    insights_dir = "data/batch_responses"
+    cfg = get_config()
+    provider = cfg["ai"]["provider"]
+    db_path = cfg["database"]["path"]
+    insights_dir = cfg.get("paths", {}).get("batch_responses_dir", "data/batch_responses")
 
     # Check if files exist
     if not os.path.exists(db_path):
@@ -153,10 +200,15 @@ def main():
         st.error(f"Insights directory not found at {insights_dir}")
         return
 
+    # Build cache-buster from current data file mtimes.
+    insight_files = list(Path(insights_dir).glob("insight_result_*.jsonl"))
+    latest_insight_mtime = max((f.stat().st_mtime for f in insight_files), default=0.0)
+    data_version = max(os.path.getmtime(db_path), latest_insight_mtime)
+
     # Load data
     with st.spinner("Loading posts and insights..."):
         try:
-            df = load_posts_with_insights(db_path, insights_dir)
+            df = load_posts_with_insights(db_path, insights_dir, provider, data_version)
         except Exception as e:
             st.error(f"Error loading data: {str(e)}")
             return
@@ -165,7 +217,7 @@ def main():
         st.warning("No posts with processed insights found.")
         return
 
-    st.success(f"Loaded {len(df)} posts with insights")
+    st.success(f"Loaded {len(df)} posts with insights (provider: {provider})")
 
     # Sidebar filters
     st.sidebar.header("🔧 Filters & Sorting")

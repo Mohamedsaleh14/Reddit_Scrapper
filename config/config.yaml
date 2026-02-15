@@ -11,6 +11,13 @@ subreddits:
     - Parenting
     - smallbusiness
     - Fitness
+    - saas
+    - entrepreneurship
+    - sports
+    - technology
+    - security
+    - pregnant
+    - Beauty
   exploratory_limit: 12             # Max exploratory subreddits at a time
   exploratory_refresh_days: 7       # How often to refresh improvised list
   exploratory_percentage: 90        # % of posts from exploratory communities
@@ -19,22 +26,28 @@ subreddits:
 # Reddit scraping settings
 scraper:
   min_post_age_days: 5              # Post must be at least 5 days old
-  max_post_age_days: 10              # Ignore posts older than 3 months
-  max_items_per_day: 100            # Total posts/comments scraped per run
+  max_post_age_days: 15              # Ignore posts older than 3 months
+  max_items_per_day: 1000           # Total posts/comments scraped per run
   include_comments: true
   rate_limit_per_minute: 60         # Reddit API rate limit
 
-# OpenAI settings
-openai:
-  model_filter: gpt-5-mini        # For pre-filtering stage
-  model_deep: gpt-5.1               # For insight extraction
+# AI provider settings
+ai:
+  provider: anthropic               # "openai" or "anthropic"
+  openai:
+    model_filter: gpt-5-mini        # For pre-filtering stage
+    model_deep: gpt-5.1             # For insight extraction
+    enqueued_token_limits:           # Max enqueued tokens per model (OpenAI tier limits)
+      gpt-5.1: 900_000
+    default_enqueued_token_limit: 5_000_000
+  anthropic:
+    model_filter: claude-haiku-4-5-20251001
+    model_deep: claude-sonnet-4-5-20250929
+    default_enqueued_token_limit: 10_000_000
   use_batch_api: true
   monthly_budget_usd: 100           # Cost cap for safety
   max_tokens_per_post: 1000         # Estimate for budgeting
   cache_input: true                 # Reuse prompt if post is nearly identical
-  enqueued_token_limits:             # Max enqueued tokens per model (OpenAI tier limits)
-    gpt-5.1: 900_000
-  default_enqueued_token_limit: 5_000_000
 
 # Scoring weights (used in filtering and final ranking)
 scoring:

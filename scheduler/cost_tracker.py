@@ -30,7 +30,7 @@ def initialize_cost_tracking():
             "monthly_costs": {},
             "current_month": get_current_month(),
             "current_month_total": 0.0,
-            "monthly_budget": config["openai"]["monthly_budget_usd"]
+            "monthly_budget": config["ai"]["monthly_budget_usd"]
         }
         save_json(data, COST_TRACKING_FILE)
     return load_json(COST_TRACKING_FILE)
@@ -72,7 +72,7 @@ def remaining_budget() -> float:
         tracking_data["current_month_total"] = 0.0
         save_json(tracking_data, COST_TRACKING_FILE)
 
-    budget = tracking_data.get("monthly_budget", config["openai"]["monthly_budget_usd"])
+    budget = tracking_data.get("monthly_budget", config["ai"]["monthly_budget_usd"])
     spent = tracking_data.get("current_month_total", 0.0)
     return max(0.0, budget - spent)
 

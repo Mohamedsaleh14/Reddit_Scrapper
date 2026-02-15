@@ -22,6 +22,11 @@ For each recommended subreddit, provide:
   - % of comments asking for solutions
   - Engagement level (low, medium, high)
 
+Exclude these types of communities entirely:
+- Legal/law-focused subreddits (e.g., r/lawyers, r/legaladvice)
+- Government policy/lobbying subreddits
+- Overseas supplier/import-export/contract subreddits
+
 Only include subreddits that:
 - Have active discussions about problems, workflows, or tool frustrations
 - Are active in the past month

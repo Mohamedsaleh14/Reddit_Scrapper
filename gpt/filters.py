@@ -1,6 +1,5 @@
 # gpt/filters.py
 
-import openai
 import os
 from typing import List, Dict
 from utils.helpers import estimate_tokens, sanitize_text
@@ -57,7 +56,8 @@ def prepare_batch_payload(posts: List[dict]) -> List[Dict]:
             "id": post["id"],
             "messages": messages,
             "meta": {
-                "estimated_tokens": estimate_tokens(title + body + post_body, config["openai"].get("model_filter", "gpt-4o-mini"))
+                "estimated_tokens": estimate_tokens(title + body + post_body,
+                    config["ai"][config["ai"]["provider"]].get("model_filter", "gpt-4o-mini"))
             }
         })
     return payload

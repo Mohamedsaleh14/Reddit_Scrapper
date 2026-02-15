@@ -57,6 +57,22 @@ def get_posts_by_ids(post_ids: set, require_unprocessed: bool = False) -> list:
         print(f"[SQLite get_posts_by_ids Error] {e}")
         return []
 
+def get_post_parent_mapping(post_ids: set) -> dict:
+    """Return {id: parent_post_id} for a set of IDs. parent_post_id is None for posts."""
+    if not post_ids:
+        return {}
+    conn = _get_connection()
+    placeholders = ",".join("?" for _ in post_ids)
+    try:
+        rows = conn.execute(
+            f"SELECT id, parent_post_id FROM posts WHERE id IN ({placeholders})",
+            tuple(post_ids)
+        ).fetchall()
+        return {row["id"]: row["parent_post_id"] for row in rows}
+    except sqlite3.Error as e:
+        print(f"[SQLite get_post_parent_mapping Error] {e}")
+        return {}
+
 def get_top_insights_from_today(limit=10) -> list:
     today = datetime.now(UTC).date().isoformat()
     conn = _get_connection()
