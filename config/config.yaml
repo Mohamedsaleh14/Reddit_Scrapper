@@ -38,11 +38,13 @@ openai:
 
 # Scoring weights (used in filtering and final ranking)
 scoring:
-  relevance_weight: 0.3
-  emotion_weight: 0.15
-  pain_point_weight: 0.25
-  implementability_weight: 0.2      # New: prioritize buildable ideas
+  relevance_weight: 0.25
+  emotion_weight: 0.1
+  pain_point_weight: 0.2
+  implementability_weight: 0.15
+  technical_depth_weight: 0.2       # Penalize vibe-codeable ideas, reward real engineering
   recent_activity_weight: 0.1       # Prioritize active threads
+  min_technical_depth: 4            # Hard filter: reject posts below this technical depth score
   output_top_n: 10                  # Number of final posts to recommend
 
 # Database settings

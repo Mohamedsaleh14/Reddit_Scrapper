@@ -254,14 +254,22 @@ def get_high_potential_ids_from_filter_results(score_threshold=7.0):
                     post_id = result["custom_id"]
                     content = result["response"]["body"]["choices"][0]["message"]["content"]
                     scores = json.loads(content)
+                    technical_depth = scores.get("technical_depth_score", 5)
+                    min_depth = weights.get("min_technical_depth", 4)
+
                     weighted_score = (
                         scores["relevance_score"] * weights["relevance_weight"] +
                         scores["emotional_intensity"] * weights["emotion_weight"] +
                         scores["pain_point_clarity"] * weights["pain_point_weight"] +
-                        scores.get("implementability_score", 5) * weights.get("implementability_weight", 0)
+                        scores.get("implementability_score", 5) * weights.get("implementability_weight", 0) +
+                        technical_depth * weights.get("technical_depth_weight", 0.2)
                     )
                     update_post_filter_scores(post_id, scores)
                     all_processed_ids.add(post_id)
+                    # Hard filter: reject vibe-codeable ideas with low technical depth
+                    if technical_depth < min_depth:
+                        log.debug(f"Rejected post {post_id}: technical_depth_score {technical_depth} < {min_depth}")
+                        continue
                     if weighted_score >= score_threshold:
                         high_ids.add(post_id)
                 except Exception as e:

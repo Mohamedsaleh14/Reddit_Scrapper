@@ -23,6 +23,7 @@ def load_posts_with_insights(db_path: str, insights_dir: str) -> pd.DataFrame:
     # Query posts with insights processed
     query = """
     SELECT id, url, title, body, relevance_score, pain_score, emotion_score,
+           COALESCE(technical_depth_score, 0) as technical_depth_score,
            subreddit, created_utc, processed_at
     FROM posts
     WHERE insight_processed = 1
@@ -63,6 +64,7 @@ def load_posts_with_insights(db_path: str, insights_dir: str) -> pd.DataFrame:
     posts_df['affected_audience'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('affected_audience', ''))
     posts_df['existing_alternatives'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('existing_alternatives', ''))
     posts_df['build_complexity'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('build_complexity', ''))
+    posts_df['technical_moat'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('technical_moat', ''))
     posts_df['business_model'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('business_model', ''))
     posts_df['business_type'] = posts_df['id'].map(lambda x: insights_data.get(x, {}).get('business_type', ''))
 
@@ -73,7 +75,7 @@ def display_post_card(post: pd.Series):
     with st.container():
         st.markdown("---")
         # Header with title and scores
-        col1, col2, col3, col4, col5 = st.columns([1, 1,1,1, 10])
+        col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 1, 9])
 
         with col1:
             st.metric("ROI", f"{post['roi_weight']}")
@@ -82,8 +84,10 @@ def display_post_card(post: pd.Series):
         with col3:
             st.metric("Pain Score", f"{post['pain_score']:.2f}")
         with col4:
-            st.metric("Emotion Score", f"{post['emotion_score']:.2f}")
+            st.metric("Emotion", f"{post['emotion_score']:.2f}")
         with col5:
+            st.metric("Tech Depth", f"{post['technical_depth_score']:.1f}")
+        with col6:
             st.info(post['pain_point'])
 
     # Title and tags row
@@ -122,6 +126,8 @@ def display_post_card(post: pd.Series):
             details_parts.append(f"**Existing Alternatives:** {post['existing_alternatives']}")
         if post.get('build_complexity'):
             details_parts.append(f"**Build Complexity:** {post['build_complexity']}")
+        if post.get('technical_moat'):
+            details_parts.append(f"**Technical Moat:** {post['technical_moat']}")
         if post.get('business_model'):
             details_parts.append(f"**Business Model:** {post['business_model']}")
 
@@ -190,6 +196,7 @@ def main():
     relevance_range = create_safe_slider("Relevance Score Range", df['relevance_score'], "relevance")
     pain_range = create_safe_slider("Pain Score Range", df['pain_score'], "pain")
     emotion_range = create_safe_slider("Emotion Score Range", df['emotion_score'], "emotion")
+    tech_depth_range = create_safe_slider("Technical Depth Range", df['technical_depth_score'], "tech_depth")
 
     # Subreddit filter
     subreddits = df['subreddit'].unique().tolist()
@@ -203,7 +210,7 @@ def main():
     st.sidebar.subheader("Sorting")
     sort_by = st.sidebar.selectbox(
         "Sort by",
-        options=['relevance_score', 'pain_score', 'emotion_score', 'roi_weight', 'created_utc'],
+        options=['relevance_score', 'pain_score', 'emotion_score', 'technical_depth_score', 'roi_weight', 'created_utc'],
         index=0
     )
 
@@ -223,6 +230,8 @@ def main():
         (df['pain_score'] <= pain_range[1]) &
         (df['emotion_score'] >= emotion_range[0]) &
         (df['emotion_score'] <= emotion_range[1]) &
+        (df['technical_depth_score'] >= tech_depth_range[0]) &
+        (df['technical_depth_score'] <= tech_depth_range[1]) &
         (df['subreddit'].isin(selected_subreddits))
     ]
 
@@ -256,6 +265,7 @@ def main():
         st.sidebar.metric("Avg Relevance", f"{filtered_df['relevance_score'].mean():.2f}")
         st.sidebar.metric("Avg Pain Score", f"{filtered_df['pain_score'].mean():.2f}")
         st.sidebar.metric("Avg Emotion Score", f"{filtered_df['emotion_score'].mean():.2f}")
+        st.sidebar.metric("Avg Tech Depth", f"{filtered_df['technical_depth_score'].mean():.2f}")
 
 if __name__ == "__main__":
     main()

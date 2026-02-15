@@ -14,20 +14,26 @@ Your task is to extract a concrete, actionable product opportunity:
 
 4. **MVP product opportunity**: Describe the SIMPLEST version that solves the core pain. Not a feature-rich fantasy platform — what's the minimum viable product a solo dev could build in 4-8 weeks? Be specific about what it does and doesn't include.
 
-5. **Build complexity**: Rate as low/medium/high. Low = standard web app with existing APIs, one dev can build MVP. Medium = needs some specialized knowledge or data integration. High = requires ML/AI expertise, regulatory compliance, or complex infrastructure.
+5. **Build complexity**: Rate as low/medium/high. IMPORTANT: We are specifically looking for medium-to-high complexity ideas that cannot be vibe-coded in a weekend. Low complexity = instant competitor replication = no moat = not interesting.
+   - low = standard CRUD web app, single API wrapper, basic browser extension. ANY developer can clone this in days with AI coding tools. DEPRIORITIZE THESE — flag them as low-moat.
+   - medium = needs meaningful system architecture: multiple service integrations, non-trivial data processing, complex business logic, real-time features, or specialized domain knowledge. Takes 2-4 months of focused work for a strong small team.
+   - high = requires distributed systems, custom algorithms, ML pipelines, complex state management, protocol-level work, or deep domain expertise. Takes 4-12 months for a skilled team. These are defensible but verify the team can actually build it.
 
-6. **Business model**: How would this make money? (subscription, freemium, one-time purchase, usage-based, etc.)
+6. **Technical moat analysis**: Explain specifically WHY this product is hard to replicate. What architectural challenges, data advantages, integration complexity, or domain expertise create a barrier to entry? If you cannot identify at least 2 concrete technical barriers, this idea is too easy to copy and should be scored down.
 
-7. **Market tags**: Up to 3 domain tags (e.g., "invoicing", "parenting-tools", "fitness-tracking").
+7. **Business model**: How would this make money? (subscription, freemium, one-time purchase, usage-based, etc.)
 
-8. **Viability assessment**: Score 1-5 considering ALL of:
+8. **Market tags**: Up to 3 domain tags (e.g., "invoicing", "parenting-tools", "fitness-tracking").
+
+9. **Viability assessment**: Score 1-5 considering ALL of:
    - Market size (how many people have this problem?)
    - Willingness to pay (are they already spending money on alternatives?)
-   - Build feasibility (can a small team ship this?)
+   - Build feasibility (can a small team of 1-5 strong engineers ship this in 2-6 months?)
    - Competition gap (is there real whitespace?)
-   Give 1 if most factors are weak, 5 if all factors are strong.
+   - Technical defensibility (is this hard enough to build that competitors can't just clone it in a week? If anyone can vibe-code a clone with AI tools in a few days, score this DOWN significantly)
+   Give 1 if most factors are weak or if the idea is trivially simple to replicate, 5 if all factors are strong AND the product has real technical depth.
 
-9. **Justification**: 1-2 sentences on why this is or isn't worth pursuing, referencing specific evidence from the post.
+10. **Justification**: 1-2 sentences on why this is or isn't worth pursuing, referencing specific evidence from the post. If the idea is too simple to build (low technical moat), explicitly say so and explain why it's easily replicable.
 
 Respond with a JSON object like:
 {
@@ -36,9 +42,10 @@ Respond with a JSON object like:
   "business_type": "B2C",
   "existing_alternatives": "FreshBooks (too expensive at $30/mo for solo), Wave (free but no payment tracking across processors), spreadsheets (manual and error-prone)",
   "product_opportunity": "A lightweight payment tracker that auto-imports from PayPal, Stripe, and bank feeds, flags overdue invoices, and sends automated reminders. MVP: connect 2 payment sources + overdue alerts.",
-  "build_complexity": "low",
+  "build_complexity": "medium",
+  "technical_moat": "Requires reliable real-time sync across 3+ payment APIs with different webhook formats, intelligent reconciliation logic to match partial payments across sources, and idempotent transaction processing to avoid double-counting. Not trivially replicable.",
   "business_model": "Freemium — free for 1 payment source, $9/mo for unlimited",
   "tags": ["invoicing", "freelancer-tools", "payments"],
   "roi_weight": 4,
-  "justification": "Large addressable market (millions of freelancers), clear willingness to pay (poster mentions paying $30/mo for FreshBooks), and straightforward API integrations make this highly viable."
+  "justification": "Large addressable market (millions of freelancers), clear willingness to pay (poster mentions paying $30/mo for FreshBooks), and meaningful integration complexity creates a real technical moat against quick clones."
 }

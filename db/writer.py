@@ -56,7 +56,7 @@ def mark_posts_in_history(post_ids: list[str]):
         print(f"[SQLite mark_posts_in_history Error] {e}")
 
 def update_post_filter_scores(post_id: str, scores: dict):
-    """Update filtering phase scores only (relevance, emotion, pain, implementability)."""
+    """Update filtering phase scores only (relevance, emotion, pain, implementability, technical depth)."""
     conn = _get_connection()
     try:
         conn.execute("""
@@ -65,6 +65,7 @@ def update_post_filter_scores(post_id: str, scores: dict):
             emotion_score = ?,
             pain_score = ?,
             implementability_score = ?,
+            technical_depth_score = ?,
             processed_at = ?
         WHERE id = ?
         """, (
@@ -72,6 +73,7 @@ def update_post_filter_scores(post_id: str, scores: dict):
             scores.get("emotional_intensity"),
             scores.get("pain_point_clarity"),
             scores.get("implementability_score"),
+            scores.get("technical_depth_score"),
             datetime.now(UTC).date().isoformat(),
             post_id
         ))

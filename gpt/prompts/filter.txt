@@ -17,6 +17,7 @@ Deprioritize:
 - Vague "wouldn't it be nice" wishes with no evidence of real suffering
 - Problems that only affect a tiny, hyper-specific audience
 - Pain points that require deep domain expertise, regulatory approval, or massive data to solve
+- Ideas that are trivially simple to build (basic CRUD, simple wrappers, landing pages, browser extensions with one function). If any decent developer can vibe-code it in a day or a week with AI tools, it has ZERO defensibility and is NOT worth pursuing. We want problems that require real system architecture, complex integrations, or deep technical work — things that take months of serious implementation to get right.
 
 Your output should include:
 - `relevance_score` (0-10): How clearly the user describes a real, recurring problem (pain signal strength)
@@ -37,12 +38,19 @@ Your output should include:
   - 5 = solutions are too expensive, too complex, or missing one key feature
   - 7 = major gaps — users resorting to manual workarounds, spreadsheets, or duct-tape integrations
   - 10 = no viable solution exists; significant time or money wasted on the problem regularly
-- `implementability_score` (0-10): Could a small team realistically build an MVP? Consider technical complexity, data requirements, and regulatory barriers. 10 = straightforward to build, 0 = requires massive resources or expertise
+- `implementability_score` (0-10): Could a small team (1-5 people) realistically build an MVP? Higher = more feasible for a small team.
   - 0 = requires massive infrastructure, regulatory approval, or domain-specific breakthroughs
   - 3 = needs specialized ML/data pipelines, rare domain expertise, or complex partnerships
   - 5 = moderate complexity — some integrations, moderate data needs, or niche technical skills
-  - 7 = standard web/mobile app leveraging existing APIs and services; one dev can build it
-  - 10 = simple CRUD app or browser extension; a solo dev can ship an MVP in weeks
+  - 7 = achievable with strong engineers in 2-6 months; requires real architecture but no moonshots
+  - 10 = well within reach of a focused small team using existing APIs and services
+- `technical_depth_score` (0-10): Does this idea require real engineering, system design, and architectural thinking — or can any beginner clone it in a day with an AI coding assistant?
+  - 0 = a simple form/CRUD app, landing page, or single-API wrapper — no real engineering needed, pure vibe-code territory
+  - 3 = basic web app with standard auth, payments, and a database — a weekend hackathon project
+  - 5 = needs meaningful backend logic, multiple integrations, or data processing — takes weeks of real work
+  - 7 = requires careful system architecture: queues, caching, real-time processing, complex data models, or multi-service orchestration
+  - 10 = deep technical work: distributed systems, custom algorithms, complex state machines, ML pipelines, or protocol-level engineering
+  NOTE: We want ideas scoring 5-10. Anything below 4 is too easy to build and has no technical moat — competitors can replicate it instantly.
 - `summary`: a 1-sentence summary of the pain point
 
 Respond with a JSON object like:
@@ -50,6 +58,7 @@ Respond with a JSON object like:
   "relevance_score": 8,
   "emotional_intensity": 7,
   "pain_point_clarity": 9,
-  "implementability_score": 7,
+  "implementability_score": 6,
+  "technical_depth_score": 7,
   "summary": "Small business owners struggle to automate invoicing without paying for expensive enterprise software."
 }
