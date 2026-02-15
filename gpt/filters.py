@@ -1,6 +1,5 @@
 # gpt/filters.py
 
-import openai
 import os
 from typing import List, Dict
 from utils.helpers import estimate_tokens, sanitize_text
@@ -9,6 +8,19 @@ from config.config_loader import get_config, PROMPT_FILTER
 
 log = setup_logger()
 config = get_config()
+
+
+def _format_post_content(post: dict) -> str:
+    """Format post/comment content with appropriate context."""
+    post_body = post.get("post_body", "")
+    if post_body:
+        # This is a comment — include parent post context
+        return (
+            f"Post title: {post['title']}\n"
+            f"Post body: {post_body}\n"
+            f"Comment: {post['body']}"
+        )
+    return f"Post title: {post['title']}\nPost body: {post['body']}"
 
 
 def build_filter_prompt(post: dict) -> List[Dict]:
@@ -20,7 +32,7 @@ def build_filter_prompt(post: dict) -> List[Dict]:
         },
         {
             "role": "user",
-            "content": f"{config['prompts'][PROMPT_FILTER]}\n\nPost title: {post['title']}\nPost body: {post['body']}"
+            "content": f"{config['prompts'][PROMPT_FILTER]}\n\n{_format_post_content(post)}"
         }
     ]
 
@@ -38,12 +50,14 @@ def prepare_batch_payload(posts: List[dict]) -> List[Dict]:
             log.error("post is invalid, this should already have been asserted - skipping")
             continue  # skip malformed posts
 
-        messages = build_filter_prompt({"title": title, "body": body})
+        post_body = sanitize_text(post.get("post_body", ""))
+        messages = build_filter_prompt({"title": title, "body": body, "post_body": post_body})
         payload.append({
             "id": post["id"],
             "messages": messages,
             "meta": {
-                "estimated_tokens": estimate_tokens(title + body, config["openai"].get("model_filter", "gpt-4o-mini"))
+                "estimated_tokens": estimate_tokens(title + body + post_body,
+                    config["ai"][config["ai"]["provider"]].get("model_filter", "gpt-4o-mini"))
             }
         })
     return payload

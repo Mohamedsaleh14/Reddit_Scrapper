@@ -1,16 +1,70 @@
-Given a Reddit post, decide whether it contains a genuine market pain point — a real problem people face that could be solved by a new digital product or service (SaaS, app, API, platform, browser extension, etc.).
+Given a Reddit post or comment, decide whether it contains a genuine market pain point — a real problem people face that could be solved by a new digital product or service (SaaS, app, API, platform, browser extension, mobile app, etc.).
 
-Focus exclusively on problems solvable by software or digital services. Ignore pain points that require hardware, physical products, or manufacturing (e.g., IoT devices, custom electronics, physical tools).
+Focus on problems solvable by software or digital services. Ignore pain points that require hardware, physical products, or manufacturing.
+
+If this is a COMMENT, evaluate it in the context of the parent post. The comment may reference or elaborate on problems described in the post. A reply like "I agree, that tool is terrible" only makes sense when you read the parent post.
 
 Analyze:
 - Does the user describe a real, recurring problem (not just venting or asking a one-off question)?
-- Could this pain point affect many people beyond just the poster?
+- Could this pain point affect thousands or millions of people, not just a handful of niche users?
 - Are existing software/digital solutions missing, inadequate, or too expensive?
+- Does the user mention paying for solutions, switching costs, budgets, or failed alternatives? (willingness to pay signal)
+- Does the user describe workarounds, time/money waste, or failed attempts to find a solution? (strong pain signal)
+- Could a solo developer or small team (1-3 people) realistically build an MVP in weeks to months?
+- Who would pay — businesses (B2B) or consumers (B2C)?
+- Could this become a platform with network effects, viral growth, or a broad user base (millions, not thousands)?
+
+Deprioritize:
+- Vague "wouldn't it be nice" wishes with no evidence of real suffering
+- Problems that only affect a tiny, hyper-specific audience
+- Pain points that require deep domain expertise, regulatory approval, or massive data to solve
+- Ideas that are trivially simple to build (basic CRUD, simple wrappers, landing pages, browser extensions with one function). If any decent developer can vibe-code it in a day or a week with AI tools, it has ZERO defensibility and is NOT worth pursuing. We want problems that require real system architecture, complex integrations, or deep technical work — things that take months of serious implementation to get right.
+
+Exclude entirely (score 0 across the board):
+- Legal services, law firm tools, attorney/paralegal workflows
+- Government policy, lobbying, regulatory compliance tools
+- Overseas contracts, supplier management, import/export logistics
+- Importing, exporting, freight forwarding, customs brokerage
+- Insurance products, claims management, liability assessment tools
+- Narrow industry-specific tools for a single vertical (e.g., "dental office scheduler", "trucking fleet manager") — unless the underlying problem is universal
+
+Vision — what we're looking for:
+We want **universal, consumer-scale or prosumer product ideas** that can gain massive traction. Think platform plays with network effects, tools that could attract millions of users, and products that solve broad human problems — not narrow industry verticals.
+Caliber of ideas we're after: Tinder (dating → platform), Airbnb (lodging → marketplace), n8n (automation → prosumer platform), Flo Health (period tracking → health platform). The common thread: they start with a universal pain point and grow into platforms with defensible network effects or data moats.
+If the idea only serves a niche of <10K potential users, it's not what we're looking for.
 
 Your output should include:
-- `relevance_score` (0–10): How clearly the user describes a real, recurring problem (pain signal strength)
-- `emotional_intensity` (0–10): Could this pain point affect many people, not just the poster? (market potential)
-- `pain_point_clarity` (0–10): Are existing solutions missing, inadequate, or too expensive? (solution gap)
+- `relevance_score` (0-10): How clearly the user describes a real, recurring problem (pain signal strength)
+  - 0 = no real problem, just idle curiosity or hypothetical musing
+  - 3 = vague complaint with no evidence it recurs or affects others
+  - 5 = clear problem described, but unclear how often it happens or how many people share it
+  - 7 = recurring problem with specific details (frequency, failed attempts, workarounds mentioned)
+  - 10 = urgent, well-documented recurring pain with concrete evidence (metrics, multiple users confirming, money spent)
+- `emotional_intensity` (0-10): Could this pain point affect many people, not just the poster? (market breadth)
+  - 0 = affects only this one person in a unique situation
+  - 3 = niche group (fewer than ~1K people likely affected)
+  - 5 = moderate audience (thousands of people in a recognizable segment)
+  - 7 = large segment (tens of thousands — e.g., all freelance accountants, all Shopify store owners)
+  - 10 = widespread problem affecting millions (e.g., all remote workers, all small business owners)
+- `pain_point_clarity` (0-10): Are existing solutions missing, inadequate, or too expensive? (solution gap)
+  - 0 = existing solutions fully address the problem at a reasonable price
+  - 3 = solutions exist but are mildly inconvenient or slightly overpriced
+  - 5 = solutions are too expensive, too complex, or missing one key feature
+  - 7 = major gaps — users resorting to manual workarounds, spreadsheets, or duct-tape integrations
+  - 10 = no viable solution exists; significant time or money wasted on the problem regularly
+- `implementability_score` (0-10): Could a small team (1-5 people) realistically build an MVP? Higher = more feasible for a small team.
+  - 0 = requires massive infrastructure, regulatory approval, or domain-specific breakthroughs
+  - 3 = needs specialized ML/data pipelines, rare domain expertise, or complex partnerships
+  - 5 = moderate complexity — some integrations, moderate data needs, or niche technical skills
+  - 7 = achievable with strong engineers in 2-6 months; requires real architecture but no moonshots
+  - 10 = well within reach of a focused small team using existing APIs and services
+- `technical_depth_score` (0-10): Does this idea require real engineering, system design, and architectural thinking — or can any beginner clone it in a day with an AI coding assistant?
+  - 0 = a simple form/CRUD app, landing page, or single-API wrapper — no real engineering needed, pure vibe-code territory
+  - 3 = basic web app with standard auth, payments, and a database — a weekend hackathon project
+  - 5 = needs meaningful backend logic, multiple integrations, or data processing — takes weeks of real work
+  - 7 = requires careful system architecture: queues, caching, real-time processing, complex data models, or multi-service orchestration
+  - 10 = deep technical work: distributed systems, custom algorithms, complex state machines, ML pipelines, or protocol-level engineering
+  NOTE: We want ideas scoring 5-10. Anything below 4 is too easy to build and has no technical moat — competitors can replicate it instantly.
 - `summary`: a 1-sentence summary of the pain point
 
 Respond with a JSON object like:
@@ -18,5 +72,7 @@ Respond with a JSON object like:
   "relevance_score": 8,
   "emotional_intensity": 7,
   "pain_point_clarity": 9,
+  "implementability_score": 6,
+  "technical_depth_score": 7,
   "summary": "Small business owners struggle to automate invoicing without paying for expensive enterprise software."
 }

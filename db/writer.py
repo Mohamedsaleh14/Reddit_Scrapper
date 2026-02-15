@@ -23,8 +23,8 @@ def insert_post(post: dict, community_type: str = "primary"):
         conn.execute("""
         INSERT OR IGNORE INTO posts (
             id, url, title, body, subreddit, created_utc, last_active,
-            processed_at, community_type, type
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            processed_at, community_type, type, post_body, parent_post_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             post["id"],
             post["url"],
@@ -35,7 +35,9 @@ def insert_post(post: dict, community_type: str = "primary"):
             post["created_utc"],
             datetime.now(UTC).date().isoformat(),
             community_type,
-            post.get("type", "post")
+            post.get("type", "post"),
+            post.get("post_body", ""),
+            post.get("parent_post_id")
         ))
 
         conn.commit()
@@ -55,7 +57,7 @@ def mark_posts_in_history(post_ids: list[str]):
         print(f"[SQLite mark_posts_in_history Error] {e}")
 
 def update_post_filter_scores(post_id: str, scores: dict):
-    """Update filtering phase scores only (relevance, emotion, pain)."""
+    """Update filtering phase scores only (relevance, emotion, pain, implementability, technical depth)."""
     conn = _get_connection()
     try:
         conn.execute("""
@@ -63,12 +65,16 @@ def update_post_filter_scores(post_id: str, scores: dict):
             relevance_score = ?,
             emotion_score = ?,
             pain_score = ?,
+            implementability_score = ?,
+            technical_depth_score = ?,
             processed_at = ?
         WHERE id = ?
         """, (
             scores.get("relevance_score"),
             scores.get("emotional_intensity"),
             scores.get("pain_point_clarity"),
+            scores.get("implementability_score"),
+            scores.get("technical_depth_score"),
             datetime.now(UTC).date().isoformat(),
             post_id
         ))
@@ -77,12 +83,11 @@ def update_post_filter_scores(post_id: str, scores: dict):
         print(f"[SQLite update_post_filter_scores Error] {e}")
 
 def update_post_insight(post_id: str, insight: dict):
-    """Update deeper insights (lead_type, tags, roi_weight). Safe from overwriting with nulls."""
+    """Update deeper insights (tags, roi_weight). Safe from overwriting with nulls."""
     conn = _get_connection()
     cursor = conn.cursor()
 
     fields = {
-        "lead_type": insight.get("lead_type"),
         "tags": ", ".join(insight["tags"]) if "tags" in insight else None,
         "roi_weight": insight.get("roi_weight")
     }

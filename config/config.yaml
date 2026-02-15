@@ -6,11 +6,18 @@ subreddits:
     - devops
     - selfhosted
     - webdev
-    - SaaS
-    - learnprogramming
     - startups
-    - sideproject
-    - experienceddevs
+    - personalfinance
+    - Parenting
+    - smallbusiness
+    - Fitness
+    - saas
+    - entrepreneurship
+    - sports
+    - technology
+    - security
+    - pregnant
+    - Beauty
   exploratory_limit: 12             # Max exploratory subreddits at a time
   exploratory_refresh_days: 7       # How often to refresh improvised list
   exploratory_percentage: 90        # % of posts from exploratory communities
@@ -19,15 +26,24 @@ subreddits:
 # Reddit scraping settings
 scraper:
   min_post_age_days: 5              # Post must be at least 5 days old
-  max_post_age_days: 10              # Ignore posts older than 3 months
-  max_items_per_day: 100            # Total posts/comments scraped per run
+  max_post_age_days: 7              # Ignore posts older than 3 months
+  max_items_per_day: 10           # Total posts/comments scraped per run
   include_comments: true
   rate_limit_per_minute: 60         # Reddit API rate limit
 
-# OpenAI settings
-openai:
-  model_filter: gpt-5-mini        # For pre-filtering stage
-  model_deep: gpt-5.1               # For insight extraction
+# AI provider settings
+ai:
+  provider: openai               # "openai" or "anthropic"
+  openai:
+    model_filter: gpt-5-mini        # For pre-filtering stage
+    model_deep: gpt-5.1             # For insight extraction
+    enqueued_token_limits:           # Max enqueued tokens per model (OpenAI tier limits)
+      gpt-5.1: 900_000
+    default_enqueued_token_limit: 5_000_000
+  anthropic:
+    model_filter: claude-haiku-4-5-20251001
+    model_deep: claude-sonnet-4-5-20250929
+    default_enqueued_token_limit: 10_000_000
   use_batch_api: true
   monthly_budget_usd: 100           # Cost cap for safety
   max_tokens_per_post: 1000         # Estimate for budgeting
@@ -35,10 +51,13 @@ openai:
 
 # Scoring weights (used in filtering and final ranking)
 scoring:
-  relevance_weight: 0.4
-  emotion_weight: 0.2
-  pain_point_weight: 0.3
+  relevance_weight: 0.25
+  emotion_weight: 0.1
+  pain_point_weight: 0.2
+  implementability_weight: 0.15
+  technical_depth_weight: 0.2       # Penalize vibe-codeable ideas, reward real engineering
   recent_activity_weight: 0.1       # Prioritize active threads
+  min_technical_depth: 4            # Hard filter: reject posts below this technical depth score
   output_top_n: 10                  # Number of final posts to recommend
 
 # Database settings

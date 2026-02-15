@@ -25,11 +25,11 @@ A Python application that scrapes Reddit for potential marketing leads, analyzes
 
 ## 📋 Overview
 
-This tool uses a combination of Reddit's API and OpenAI's GPT models to:
+This tool uses a combination of Reddit's API and AI models (OpenAI or Anthropic) to:
 
-1. Scrape relevant subreddits for discussions about scheduling, automation, and related topics
-2. Identify posts that express pain points solvable by a cron job scheduling SaaS
-3. Score and analyze these posts to find high-quality marketing leads
+1. Scrape relevant subreddits for discussions across diverse domains (tech, finance, parenting, fitness, business, and more)
+2. Identify posts that express pain points with real product-building potential
+3. Score and analyze posts using multi-dimensional metrics including technical depth, implementability, and emotional intensity
 4. Store results in a local SQLite database for review
 5. Browse and filter results through an interactive web dashboard
 
@@ -41,7 +41,7 @@ The application maintains a balance between focused and exploratory subreddits, 
 
 - Python 3.10+
 - Reddit API credentials ([create an app here](https://www.reddit.com/prefs/apps))
-- OpenAI API key
+- OpenAI API key **or** Anthropic API key (configurable via `config.yaml`)
 
 ### Installation
 
@@ -73,18 +73,21 @@ The application maintains a balance between focused and exploratory subreddits, 
    REDDIT_CLIENT_SECRET=your_client_secret
    REDDIT_USER_AGENT=script:cronlytic-reddit-scraper:v1.0 (by /u/yourusername)
    OPENAI_API_KEY=your_openai_api_key
+   ANTHROPIC_API_KEY=your_anthropic_api_key
    ```
 
 ## 🔧 Configuration
 
 Configure the application by editing `config/config.yaml`. Key settings include:
 
+- **AI provider**: Choose between `openai` or `anthropic` as the batch processing backend
 - **Target subreddits**: Primary subreddits and exploratory subreddit settings
 - **Post age range**: Only analyze posts within the configured age window
 - **API rate limits**: Prevent hitting Reddit API limits
-- **OpenAI models**: Which models to use for filtering and deep analysis
+- **AI models**: Per-provider model configuration for filtering and deep analysis
 - **Monthly budget**: Cap total API spending
-- **Scoring weights**: How to weight different factors when scoring posts
+- **Scoring weights**: How to weight different factors (relevance, pain point clarity, emotional intensity, implementability, technical depth) when scoring posts
+- **Token limits**: Per-model enqueued token limits for batch API submissions
 
 ## 🏃‍♀️ Running
 
@@ -126,13 +129,13 @@ streamlit run gui/gui.py --server.port 8501 --server.address localhost
 
 The dashboard provides:
 
-- **Score filtering** — Adjust sliders for ROI, relevance, pain score, and emotion score to focus on the posts that matter most
-- **Lead type & subreddit filters** — Multi-select filters to narrow results by lead type or source subreddit
-- **Sorting** — Sort by any score metric or post date, ascending or descending
+- **Score filtering** — Adjust sliders for ROI, relevance, pain score, emotion score, implementability, and technical depth to focus on the posts that matter most
+- **Subreddit filters** — Multi-select filters to narrow results by source subreddit
+- **Sorting** — Sort by any score metric (including technical depth) or post date, ascending or descending
 - **Pagination** — Browse through large result sets 10 posts at a time
-- **Post cards** — Each post displays scores, pain point summary, tags, lead type, and a link to the original Reddit thread
-- **Expandable details** — Click into any post to read the body text and AI-generated justification
-- **Summary statistics** — Sidebar shows total posts, average relevance, pain, and emotion scores for the current filter
+- **Post cards** — Each post displays scores, pain point summary, product opportunity, technical depth, tags, and a link to the original Reddit thread
+- **Expandable details** — Click into any post to read the body text, AI-generated justification, affected audience, business type, existing alternatives, build complexity, business model, and technical moat analysis
+- **Summary statistics** — Sidebar shows total posts with average relevance, pain, emotion, and tech depth scores for the current filter
 
 ## 📊 Results
 
@@ -163,8 +166,10 @@ Reddit_Scrapper/
 │   ├── reader.py            # Read queries
 │   ├── writer.py            # Write operations
 │   └── cleaner.py           # Old entry cleanup
-├── gpt/                     # OpenAI GPT integration
-│   ├── batch_api.py         # Batch job submission & polling
+├── gpt/                     # AI integration (OpenAI & Anthropic)
+│   ├── batch_api.py         # OpenAI Batch API submission & polling
+│   ├── anthropic_batch.py   # Anthropic Message Batches API integration
+│   ├── batch_provider.py    # Provider routing layer (OpenAI/Anthropic)
 │   ├── filters.py           # Pre-filtering prompt builder
 │   ├── insights.py          # Deep insight prompt builder
 │   └── prompts/             # Prompt templates
@@ -184,6 +189,8 @@ Reddit_Scrapper/
 ├── utils/                   # Utility functions
 │   ├── helpers.py           # Token estimation, sanitization
 │   └── logger.py            # Logging setup
+├── scripts/                 # Utility scripts
+│   └── clean_openai_storage.py  # Clean accumulated OpenAI batch files
 ├── .env.template            # Template for environment variables
 ├── main.py                  # Application entry point
 ├── run_gui.sh               # GUI launcher script
@@ -195,7 +202,9 @@ Reddit_Scrapper/
 The application includes several safeguards to control API costs:
 
 - Monthly budget cap (configurable in `config.yaml`)
-- Efficient batch processing using OpenAI's Batch API
+- Efficient batch processing using OpenAI's Batch API or Anthropic's Message Batches API
+- Per-model enqueued token limits to avoid provider quota issues
+- Automatic OpenAI storage cleanup (removes accumulated batch input/output files)
 - Parallel batch submission with token-aware scheduling
 - Partial result recovery from expired batches
 - Pre-filtering with less expensive models before using more powerful models
@@ -212,7 +221,11 @@ The application includes several safeguards to control API costs:
 | **Rate Limiting**                         | ✅ Done | Real limiter applied to avoid Reddit bans             |
 | **Budget Control**                        | ✅ Done | Tracks monthly cost, blocks over-budget batches       |
 | **Daily Runner Pipeline**                 | ✅ Done | Logs step-by-step, fail-safe batch handling           |
+| **Anthropic Batch API Provider**          | ✅ Done | Full alternative to OpenAI with config-based switching |
 | **Parallel Batch Processing**             | ✅ Done | Token-aware scheduling, partial result recovery       |
+| **Technical Depth Scoring**               | ✅ Done | Measures engineering complexity and defensibility      |
+| **Implementability Scoring**              | ✅ Done | Feasibility assessment with willingness-to-pay signals|
+| **OpenAI Storage Cleanup**                | ✅ Done | Auto-cleans accumulated batch files before each run   |
 | **Cached Summaries → GPT Discovery**      | ✅ Done | Based on post text, fallback if prompt fails          |
 | **Comment scraping toggle**               | ✅ Done | Controlled via config key (`include_comments`)        |
 | **Retry on GPT Batch Failures**           | ✅ Done | With exponential backoff and item-level retry         |
@@ -240,6 +253,7 @@ Thanks to the following people who have contributed to this project:
 
 - [PRAW (Python Reddit API Wrapper)](https://praw.readthedocs.io/)
 - [OpenAI API](https://platform.openai.com/docs/api-reference)
+- [Anthropic API](https://docs.anthropic.com/en/docs)
 - [APScheduler](https://apscheduler.readthedocs.io/)
 - [Streamlit](https://streamlit.io/)
 
@@ -268,6 +282,7 @@ This project uses open source libraries, which are governed by their own license
 - [PRAW](https://github.com/praw-dev/praw) — MIT License
 - [APScheduler](https://github.com/agronholm/apscheduler) — MIT License
 - [OpenAI Python SDK](https://github.com/openai/openai-python) — MIT License
+- [Anthropic Python SDK](https://github.com/anthropics/anthropic-sdk-python) — MIT License
 - [Streamlit](https://github.com/streamlit/streamlit) — Apache License 2.0
 - [Pandas](https://github.com/pandas-dev/pandas) — BSD 3-Clause License
 - [Reddit API](https://www.reddit.com/dev/api/) — Subject to Reddit's [Terms of Service](https://www.redditinc.com/policies/data-api-terms)
