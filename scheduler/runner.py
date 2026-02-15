@@ -17,7 +17,8 @@ from gpt.batch_provider import (
     download_batch_results, download_batch_results_if_available,
     get_processed_custom_ids, add_estimated_batch_cost,
     get_active_enqueued_tokens, probe_enqueued_capacity,
-    retrieve_batch, extract_content_from_result
+    retrieve_batch, extract_content_from_result,
+    clean_storage
 )
 from db.cleaner import clean_old_entries
 from scheduler.cost_tracker import initialize_cost_tracking, can_process_batch
@@ -110,8 +111,7 @@ def _wait_for_batch_confirmation(batch_id, timeout=300, poll_interval=10):
 
 
 def submit_batches_parallel(all_sub_batches, model, generate_file_fn, label,
-                            max_retries=5, enqueued_token_limit=None,
-                            max_completion_tokens=1024):
+                            max_retries=5, enqueued_token_limit=None):
     """Submit batches with confirmed-capacity scheduling.
 
     Strategy: submit one batch at a time, wait for OpenAI to confirm it's
@@ -172,12 +172,10 @@ def submit_batches_parallel(all_sub_batches, model, generate_file_fn, label,
             # Submit the batch
             try:
                 add_estimated_batch_cost(batch_items, model)
-                file_path = generate_file_fn(batch_items, model,
-                                             max_completion_tokens=max_completion_tokens)
+                file_path = generate_file_fn(batch_items, model)
                 batch_id = submit_batch_job(file_path, estimated_tokens=batch_tokens)
                 log.info(f"Submitted {label} batch {batch_id} with {len(batch_items)} items "
-                         f"({batch_tokens:,} tokens, max_output={max_completion_tokens}). "
-                         f"Waiting for confirmation...")
+                         f"({batch_tokens:,} tokens). Waiting for confirmation...")
             except Exception as e:
                 log.error(f"Failed to submit {label} batch: {e}. Deferring {len(batch_items)} items.")
                 save_failed_batch(batch_items, label)
@@ -391,12 +389,14 @@ def clean_old_batch_files(folder="data/batch_responses", days_old=None):
                     log.warning(f"Failed to delete old file {path}: {e}")
     log.info(f"Cleaned up {deleted} old batch response files older than {days_old} days.")
 
-def get_high_potential_ids_from_filter_results(score_threshold=7.0):
+def get_high_potential_ids_from_filter_results(result_paths=None, score_threshold=7.0):
     processed = 0
     high_candidates = {}  # post_id -> weighted_score (before dedup)
     all_processed_ids = set()
     weights = config["scoring"]
-    for path in glob.glob("data/batch_responses/filter_result_*.jsonl"):
+    if result_paths is None:
+        result_paths = glob.glob("data/batch_responses/filter_result_*.jsonl")
+    for path in result_paths:
         with open(path, "r") as f:
             for line in f:
                 try:
@@ -450,6 +450,7 @@ def run_daily_pipeline():
     ensure_directory_exists("data")
     ensure_directory_exists("data/batch_responses")
     clean_old_batch_files()
+    clean_storage()
     create_tables()
     initialize_cost_tracking()
 
@@ -482,11 +483,10 @@ def run_daily_pipeline():
     model_filter = config["ai"][config["ai"]["provider"]]["model_filter"]
     filter_batches = split_batch_by_token_limit(filter_batch, model_filter)
 
-    submit_batches_parallel(filter_batches, model_filter, generate_batch_payload, "filter",
-                            max_completion_tokens=512)
+    filter_result_paths = submit_batches_parallel(filter_batches, model_filter, generate_batch_payload, "filter")
 
     log.info("Step 4: Selecting high-potential posts from filter results...")
-    high_potential_ids, all_filtered_ids = get_high_potential_ids_from_filter_results()
+    high_potential_ids, all_filtered_ids = get_high_potential_ids_from_filter_results(filter_result_paths)
 
     # Mark posts that were filtered but NOT high-potential into history
     # (they're fully done — scored but below threshold, no further processing needed)
@@ -517,8 +517,7 @@ def run_daily_pipeline():
     model_deep = config["ai"][config["ai"]["provider"]]["model_deep"]
     insight_batches = split_batch_by_token_limit(insight_batch, model_deep)
     all_insight_paths = submit_batches_parallel(
-        insight_batches, model_deep, generate_batch_payload, "insight",
-        max_completion_tokens=1024
+        insight_batches, model_deep, generate_batch_payload, "insight"
     )
 
     log.info("Step 5: Updating posts with deep insights...")

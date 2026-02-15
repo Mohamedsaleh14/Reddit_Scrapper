@@ -98,12 +98,17 @@ def discover_adjacent_subreddits(summaries: list[str], model: str = None) -> lis
             content = response.content[0].text
         else:
             max_tokens = config["ai"].get("discovery_max_tokens", 4096)
-            response = client.chat.completions.create(
-                model=model,
-                messages=prompt,
-                temperature=0.3,
-                max_tokens=max_tokens
-            )
+            kwargs = {
+                "model": model,
+                "messages": prompt,
+            }
+            # gpt-5+ requires max_completion_tokens instead of max_tokens
+            if model.startswith("gpt-5"):
+                kwargs["max_completion_tokens"] = max_tokens
+            else:
+                kwargs["temperature"] = 0.3
+                kwargs["max_tokens"] = max_tokens
+            response = client.chat.completions.create(**kwargs)
             content = response.choices[0].message.content
 
         log.debug(f"Discovery API response: {content[:200]}...")

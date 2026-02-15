@@ -15,12 +15,12 @@ def _provider():
     return _config["ai"]["provider"]
 
 
-def generate_batch_payload(requests, model, max_completion_tokens=1024):
+def generate_batch_payload(requests, model):
     if _provider() == "anthropic":
         from gpt.anthropic_batch import generate_batch_payload as fn
     else:
         from gpt.batch_api import generate_batch_payload as fn
-    return fn(requests, model, max_completion_tokens=max_completion_tokens)
+    return fn(requests, model)
 
 
 def submit_batch_job(file_path, estimated_tokens=0):
@@ -85,6 +85,17 @@ def add_estimated_batch_cost(requests, model):
     else:
         from gpt.batch_api import add_estimated_batch_cost as fn
     return fn(requests, model)
+
+
+def clean_storage():
+    """Clean provider's remote file storage before starting a run.
+
+    For OpenAI, deletes old batch input/output files that accumulate and
+    can block new submissions. For Anthropic, this is a no-op (no file storage).
+    """
+    if _provider() == "openai":
+        from gpt.batch_api import clean_storage as fn
+        fn()
 
 
 def retrieve_batch(batch_id):

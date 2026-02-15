@@ -26,14 +26,14 @@ subreddits:
 # Reddit scraping settings
 scraper:
   min_post_age_days: 5              # Post must be at least 5 days old
-  max_post_age_days: 15              # Ignore posts older than 3 months
-  max_items_per_day: 1000           # Total posts/comments scraped per run
+  max_post_age_days: 7              # Ignore posts older than 3 months
+  max_items_per_day: 10           # Total posts/comments scraped per run
   include_comments: true
   rate_limit_per_minute: 60         # Reddit API rate limit
 
 # AI provider settings
 ai:
-  provider: anthropic               # "openai" or "anthropic"
+  provider: openai               # "openai" or "anthropic"
   openai:
     model_filter: gpt-5-mini        # For pre-filtering stage
     model_deep: gpt-5.1             # For insight extraction

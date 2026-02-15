@@ -24,6 +24,8 @@ Exclude entirely (score 0 across the board):
 - Legal services, law firm tools, attorney/paralegal workflows
 - Government policy, lobbying, regulatory compliance tools
 - Overseas contracts, supplier management, import/export logistics
+- Importing, exporting, freight forwarding, customs brokerage
+- Insurance products, claims management, liability assessment tools
 - Narrow industry-specific tools for a single vertical (e.g., "dental office scheduler", "trucking fleet manager") — unless the underlying problem is universal
 
 Vision — what we're looking for:

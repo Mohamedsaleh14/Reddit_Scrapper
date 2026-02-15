@@ -18,8 +18,7 @@ def _get_client():
     return anthropic.Anthropic(api_key=api_key)
 
 
-def generate_batch_payload(requests: list[dict], model: str,
-                           max_completion_tokens: int = 1024) -> str:
+def generate_batch_payload(requests: list[dict], model: str) -> str:
     """Create a JSONL file with Anthropic Message Batches request format.
 
     Each line: {"custom_id": "...", "params": {"model": "...", "max_tokens": ..., "messages": [...]}}
@@ -49,7 +48,7 @@ def generate_batch_payload(requests: list[dict], model: str,
 
             params = {
                 "model": model,
-                "max_tokens": max_completion_tokens,
+                "max_tokens": 4096,
                 "messages": user_messages,
             }
             if system_content:

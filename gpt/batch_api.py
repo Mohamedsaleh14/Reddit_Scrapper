@@ -13,15 +13,32 @@ config = get_config()
 
 RESPONSE_DIR = "data/batch_responses"
 
-def generate_batch_payload(requests: list[dict], model: str,
-                           max_completion_tokens: int = 1024) -> str:
-    """Create a JSONL file from prompts for OpenAI batch processing.
+def clean_storage():
+    """Delete all batch-related files from OpenAI's file storage.
 
-    max_completion_tokens caps each response's output tokens. This also reduces
-    the enqueued token count at OpenAI (they count input + max_completion_tokens).
-    - Filter stage: 512 is plenty (output is ~100-150 tokens)
-    - Insight stage: 1024 is safe (output is ~400-600 tokens)
+    OpenAI's storage accumulates input/output files from previous batch runs.
+    If not cleaned, this can block new batch submissions due to storage limits.
     """
+    try:
+        files = openai.files.list()
+        deleted = 0
+        for f in files.data:
+            if f.purpose in ("batch", "batch_output"):
+                try:
+                    openai.files.delete(f.id)
+                    deleted += 1
+                except Exception as e:
+                    log.warning(f"Failed to delete file {f.id}: {e}")
+        if deleted:
+            log.info(f"Cleaned {deleted} batch files from OpenAI storage.")
+        else:
+            log.info("No batch files found in OpenAI storage to clean.")
+    except Exception as e:
+        log.warning(f"Failed to list/clean OpenAI storage: {e}")
+
+
+def generate_batch_payload(requests: list[dict], model: str) -> str:
+    """Create a JSONL file from prompts for OpenAI batch processing."""
     os.makedirs(RESPONSE_DIR, exist_ok=True)
     job_id = str(uuid.uuid4())
     path = f"{RESPONSE_DIR}/batch_{job_id}.jsonl"
@@ -32,7 +49,6 @@ def generate_batch_payload(requests: list[dict], model: str,
                     "model": model,
                     "messages": prompt["messages"],
                     "response_format": {"type": "json_object"},
-                    "max_completion_tokens": max_completion_tokens,
                 }
             # gpt-5+ models only support the default temperature (1)
             if not model.startswith("gpt-5"):
