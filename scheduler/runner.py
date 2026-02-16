@@ -487,14 +487,14 @@ def run_daily_pipeline():
 
     log.info("Step 3: Preparing posts for filtering...")
     filter_batch = prepare_filter_batch(scraped_posts)
-    filter_cost = estimate_filter_cost(scraped_posts)
+    model_filter = config["ai"][config["ai"]["provider"]]["model_filter"]
+    filter_cost = estimate_filter_cost(filter_batch, model=model_filter)
     log.info(f"Estimated cost for filtering: ${filter_cost:.2f}")
 
     if not can_process_batch(filter_cost):
         log.error("Insufficient budget for filtering. Exiting pipeline.")
         return
 
-    model_filter = config["ai"][config["ai"]["provider"]]["model_filter"]
     filter_batches = split_batch_by_token_limit(filter_batch, model_filter)
 
     filter_result_paths = submit_batches_parallel(filter_batches, model_filter, generate_batch_payload, "filter")

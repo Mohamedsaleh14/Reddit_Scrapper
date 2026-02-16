@@ -2,7 +2,7 @@
 
 import os
 from typing import List, Dict
-from utils.helpers import estimate_tokens, sanitize_text
+from utils.helpers import estimate_chat_tokens, sanitize_text
 from utils.logger import setup_logger
 from config.config_loader import get_config, PROMPT_FILTER
 
@@ -40,6 +40,10 @@ def build_filter_prompt(post: dict) -> List[Dict]:
 def prepare_batch_payload(posts: List[dict]) -> List[Dict]:
     """Returns list of payloads for batch submission."""
     payload = []
+    provider = config["ai"]["provider"]
+    model = config["ai"][provider].get("model_filter", "gpt-4o-mini")
+    extra_text = "\n\nYou MUST respond with valid JSON only." if provider == "anthropic" else ""
+
     for post in posts:
         raw_title = post.get("title", "")
         raw_body = post.get("body", "")
@@ -56,14 +60,19 @@ def prepare_batch_payload(posts: List[dict]) -> List[Dict]:
             "id": post["id"],
             "messages": messages,
             "meta": {
-                "estimated_tokens": estimate_tokens(title + body + post_body,
-                    config["ai"][config["ai"]["provider"]].get("model_filter", "gpt-4o-mini"))
+                "estimated_tokens": estimate_chat_tokens(
+                    messages,
+                    model=model,
+                    provider=provider,
+                    response_format={"type": "json_object"} if provider == "openai" else None,
+                    extra_text=extra_text,
+                )
             }
         })
     return payload
 
 
-def estimate_batch_cost(posts: List[dict], model: str = "gpt-4o-mini", avg_tokens: int = 300) -> float:
+def estimate_batch_cost(batch: List[dict], model: str = "gpt-4o-mini", avg_tokens: int = 300) -> float:
     """
     Estimate cost of a filtering batch using actual model pricing.
     """
@@ -74,7 +83,10 @@ def estimate_batch_cost(posts: List[dict], model: str = "gpt-4o-mini", avg_token
     }
 
     model_pricing = pricing.get(model, {"input": 0.0005})  # default fallback
-    total_tokens = len(posts) * avg_tokens
+    if batch and isinstance(batch[0], dict) and "meta" in batch[0]:
+        total_tokens = sum(item.get("meta", {}).get("estimated_tokens", avg_tokens) for item in batch)
+    else:
+        total_tokens = len(batch) * avg_tokens
     input_cost_per_1k = model_pricing["input"]
 
     return (total_tokens / 1000) * input_cost_per_1k

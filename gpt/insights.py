@@ -2,7 +2,7 @@
 
 import os
 from typing import List, Dict, Any
-from utils.helpers import estimate_tokens, sanitize_text
+from utils.helpers import estimate_chat_tokens, sanitize_text
 from utils.logger import setup_logger
 from config.config_loader import get_config, PROMPT_INSIGHT
 
@@ -40,6 +40,7 @@ def prepare_insight_batch(posts: List[dict]) -> List[Dict[str, Any]]:
     """Prepares GPT-4.1 insight batch payload."""
     provider = config["ai"]["provider"]
     model = config["ai"][provider].get("model_deep", "gpt-4.1")
+    extra_text = "\n\nYou MUST respond with valid JSON only." if provider == "anthropic" else ""
     payload = []
 
     for post in posts:
@@ -57,7 +58,13 @@ def prepare_insight_batch(posts: List[dict]) -> List[Dict[str, Any]]:
             "id": post["id"],
             "messages": messages,
             "meta": {
-                "estimated_tokens": estimate_tokens(title + body + post_body, model)
+                "estimated_tokens": estimate_chat_tokens(
+                    messages,
+                    model=model,
+                    provider=provider,
+                    response_format={"type": "json_object"} if provider == "openai" else None,
+                    extra_text=extra_text,
+                )
             }
         })
     return payload

@@ -1,9 +1,9 @@
 # utils/helpers.py
 
-import tiktoken
 import os
 import json
 import re
+import tiktoken
 from datetime import datetime, timedelta, timezone
 
 from config.config_loader import get_config
@@ -13,17 +13,71 @@ from utils.logger import setup_logger
 log = setup_logger()
 config = get_config()
 
-# Default tokenizer for GPT-4, GPT-3.5
+# Default tokenizer fallback
 DEFAULT_ENCODING = "cl100k_base"
 ENCODER = tiktoken.get_encoding(DEFAULT_ENCODING)
 
-def estimate_tokens(text: str, model: str = "gpt-4o-mini") -> int:
-    """Estimate the number of tokens for a given text and model."""
+def _encoding_for_model(model: str):
+    """Get best-available tokenizer encoding for a model string."""
     try:
-        enc = tiktoken.encoding_for_model(model)
+        return tiktoken.encoding_for_model(model)
     except KeyError:
-        enc = tiktoken.get_encoding("cl100k_base")
-    return len(enc.encode(text))
+        # Newer OpenAI model families generally map better to o200k_base.
+        if model.startswith(("gpt-4.1", "gpt-4o", "gpt-5", "o1", "o3", "o4")):
+            return tiktoken.get_encoding("o200k_base")
+        return tiktoken.get_encoding(DEFAULT_ENCODING)
+
+def estimate_tokens(text: str, model: str = "gpt-4o-mini") -> int:
+    """Estimate token count for plain text."""
+    enc = _encoding_for_model(model)
+    return len(enc.encode(text or ""))
+
+def estimate_chat_tokens(messages: list[dict], model: str = "gpt-4o-mini",
+                         provider: str = "openai", response_format: dict | None = None,
+                         extra_text: str = "") -> int:
+    """Estimate tokens for a chat-completions style request.
+
+    This is more accurate than counting only title/body text because it includes:
+    - system/user wrapper message overhead
+    - prompt template text
+    - optional response_format payload
+    - optional provider-specific extra instruction text
+    """
+    enc = _encoding_for_model(model)
+
+    # OpenAI chat wrapper heuristic from tokenizer guidance.
+    if provider == "openai":
+        tokens_per_message = 3
+        tokens_per_name = 1
+        total = 3  # assistant priming
+
+        for msg in messages or []:
+            total += tokens_per_message
+            for key, value in msg.items():
+                if value is None:
+                    continue
+                if isinstance(value, str):
+                    total += len(enc.encode(value))
+                else:
+                    total += len(enc.encode(json.dumps(value, ensure_ascii=False, separators=(",", ":"))))
+                if key == "name":
+                    total += tokens_per_name
+
+        if response_format:
+            total += len(enc.encode(json.dumps(response_format, ensure_ascii=False, separators=(",", ":"))))
+
+        if extra_text:
+            total += len(enc.encode(extra_text))
+
+        return total
+
+    # Generic fallback for non-OpenAI providers: serialize request payload.
+    payload = {"model": model, "messages": messages or []}
+    if response_format:
+        payload["response_format"] = response_format
+    if extra_text:
+        payload["extra_text"] = extra_text
+    return len(enc.encode(json.dumps(payload, ensure_ascii=False, separators=(",", ":"))))
 
 def ensure_directory_exists(path: str):
     """Create a directory if it does not exist."""
